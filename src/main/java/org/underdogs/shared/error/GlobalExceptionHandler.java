@@ -12,6 +12,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import java.util.List;
 
 @RestControllerAdvice
@@ -124,6 +126,48 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            AccessDeniedException exception,
+            HttpServletRequest request
+    ) {
+        logger.warn("Access denied on {} {} - {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getMessage()
+        );
+
+        ErrorResponse response = new ErrorResponse(
+                "FORBIDDEN",
+                "You do not have permission to access this resource",
+                timeProvider.now(),
+                List.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(
+            AuthenticationException exception,
+            HttpServletRequest request
+    ) {
+        logger.warn("Authentication failed on {} {} - {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getMessage()
+        );
+
+        ErrorResponse response = new ErrorResponse(
+                "UNAUTHORIZED",
+                "Authentication is required to access this resource",
+                timeProvider.now(),
+                List.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpectedException(
             Exception exception,
@@ -147,9 +191,24 @@ public class GlobalExceptionHandler {
 
     private HttpStatus mapBusinessCodeToStatus(String code) {
         return switch (code) {
-            case "USER_NOT_FOUND" -> HttpStatus.NOT_FOUND;
-            case "USER_ALREADY_EXISTS" -> HttpStatus.CONFLICT;
-            case "INSUFFICIENT_KIBBLES" -> HttpStatus.CONFLICT;
+            case BusinessErrorCodes.USER_NOT_FOUND,
+                 BusinessErrorCodes.TEAM_NOT_FOUND,
+                 BusinessErrorCodes.PLAYER_NOT_FOUND -> HttpStatus.NOT_FOUND;
+
+            case BusinessErrorCodes.USER_ALREADY_EXISTS,
+                 BusinessErrorCodes.TEAM_NAME_ALREADY_EXISTS,
+                 BusinessErrorCodes.TEAM_TAG_ALREADY_EXISTS,
+                 BusinessErrorCodes.PLAYER_ALREADY_EXISTS,
+                 BusinessErrorCodes.INSUFFICIENT_KIBBLES -> HttpStatus.CONFLICT;
+
+            case BusinessErrorCodes.MISSING_EMAIL,
+                 BusinessErrorCodes.MISSING_USERNAME,
+                 BusinessErrorCodes.MISSING_FIRST_NAME,
+                 BusinessErrorCodes.MISSING_LAST_NAME,
+                 BusinessErrorCodes.MISSING_BIRTHDATE,
+                 BusinessErrorCodes.INVALID_BIRTHDATE_FORMAT,
+                 BusinessErrorCodes.USER_TOO_YOUNG -> HttpStatus.BAD_REQUEST;
+
             default -> HttpStatus.BAD_REQUEST;
         };
     }

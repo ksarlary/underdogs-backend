@@ -1,4 +1,7 @@
 package org.underdogs.players.application.usecases;
 
-public class DeletePlayer {
+import org.underdogs.players.domain.PlayerId;
+
+public interface DeletePlayer {
+    void handle(PlayerId id);
 }

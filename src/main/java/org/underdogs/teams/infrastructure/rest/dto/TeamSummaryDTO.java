@@ -1,4 +1,9 @@
 package org.underdogs.teams.infrastructure.rest.dto;
 
-public class TeamSummaryDTO {
+public record TeamSummaryDTO(
+        String id,
+        String name,
+        String tag,
+        String game
+) {
 }

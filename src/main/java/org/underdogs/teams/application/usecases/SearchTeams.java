@@ -1,4 +1,9 @@
 package org.underdogs.teams.application.usecases;
 
-public class SearchTeams {
+import org.underdogs.teams.domain.Team;
+
+import java.util.List;
+
+public interface SearchTeams {
+    List<Team> handle();
 }

@@ -1,5 +1,6 @@
 package org.underdogs.users.infrastructure.rest;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.underdogs.users.application.models.CreateUserRequest;
 import org.underdogs.users.application.models.CreditKibblesRequest;
 import org.underdogs.users.application.models.UpdateUserRequest;
@@ -47,6 +48,7 @@ class UserController {
         this.userMapper = userMapper;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     ResponseEntity<List<UserSummaryDTO>> listUsers() {
         return ResponseEntity.ok(
@@ -65,7 +67,7 @@ class UserController {
     @PostMapping
     ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserRequest request) {
         final var userId = createUser.handle(request);
-        return ResponseEntity.created(URI.create("/api/users/" + userId.value())).build();
+        return ResponseEntity.created(URI.create("/api/v1/users/" + userId.value())).build();
     }
 
     @PutMapping("/{id}")
