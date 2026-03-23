@@ -1,14 +1,13 @@
 package org.underdogs.shared;
 
-import org.springframework.stereotype.Component;
-
 import java.util.UUID;
+import org.springframework.stereotype.Component;
 
 @Component
 public class UuidDomainIdGenerator implements DomainIdGenerator {
 
-    @Override
-    public String generate() {
-        return UUID.randomUUID().toString();
-    }
+  @Override
+  public String generate() {
+    return UUID.randomUUID().toString();
+  }
 }

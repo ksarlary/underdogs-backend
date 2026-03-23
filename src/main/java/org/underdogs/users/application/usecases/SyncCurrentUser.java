@@ -1,8 +1,8 @@
 package org.underdogs.users.application.usecases;
 
-import org.underdogs.users.domain.User;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.underdogs.users.domain.User;
 
 public interface SyncCurrentUser {
-    User handle(Jwt jwt);
+  User handle(Jwt jwt);
 }
