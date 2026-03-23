@@ -1,3 +1,22 @@
+# Commands
+## Run the application
+`mvn spring-boot:run`
+
+## Run tests
+`mvn test`
+
+## Run tests with coverage (JaCoCo)
+`mvn clean test`
+
+Open coverage report: **target/site/jacoco/index.html**
+
+## Check formatting (Spotless)
+`mvn spotless:check`
+
+## Format code (Spotless)
+`mvn spotless:apply`
+
+
 # Routes:
 ## User
 * **GET /api/v1/users/me** — Returns the currently authenticated user (Creates user in DB if not exists, syncs data from Keycloak)

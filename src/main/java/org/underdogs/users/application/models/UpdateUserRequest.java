@@ -5,11 +5,4 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record UpdateUserRequest(
-        @NotBlank
-        @Email
-        String email,
-
-        @NotBlank
-        @Size(min = 2, max = 100)
-        String displayName
-) {}
+    @NotBlank @Email String email, @NotBlank @Size(min = 2, max = 100) String displayName) {}

@@ -1,9 +1,8 @@
 package org.underdogs.users.application.usecases;
 
+import java.util.List;
 import org.underdogs.users.domain.User;
 
-import java.util.List;
-
 public interface SearchUsers {
-    List<User> handle();
+  List<User> handle();
 }
