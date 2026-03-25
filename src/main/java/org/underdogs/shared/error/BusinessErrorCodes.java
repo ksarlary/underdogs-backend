@@ -23,4 +23,11 @@ public final class BusinessErrorCodes {
   public static final String PLAYER_ALREADY_EXISTS = "PLAYER_ALREADY_EXISTS";
 
   public static final String INSUFFICIENT_KIBBLES = "INSUFFICIENT_KIBBLES";
+
+  public static final String TOURNAMENT_NOT_FOUND = "TOURNAMENT_NOT_FOUND";
+  public static final String TOURNAMENT_ALREADY_EXISTS = "TOURNAMENT_ALREADY_EXISTS";
+
+  public static final String MATCH_NOT_FOUND = "MATCH_NOT_FOUND";
+  public static final String INVALID_MATCH_TEAMS = "INVALID_MATCH_TEAMS";
+  public static final String INVALID_MATCH_WINNER = "INVALID_MATCH_WINNER";
 }

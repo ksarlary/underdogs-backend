@@ -152,6 +152,8 @@ public class GlobalExceptionHandler {
     return switch (code) {
       case BusinessErrorCodes.USER_NOT_FOUND,
               BusinessErrorCodes.TEAM_NOT_FOUND,
+              BusinessErrorCodes.TOURNAMENT_NOT_FOUND,
+              BusinessErrorCodes.MATCH_NOT_FOUND,
               BusinessErrorCodes.PLAYER_NOT_FOUND ->
           HttpStatus.NOT_FOUND;
 
@@ -159,6 +161,7 @@ public class GlobalExceptionHandler {
               BusinessErrorCodes.TEAM_NAME_ALREADY_EXISTS,
               BusinessErrorCodes.TEAM_TAG_ALREADY_EXISTS,
               BusinessErrorCodes.PLAYER_ALREADY_EXISTS,
+              BusinessErrorCodes.TOURNAMENT_ALREADY_EXISTS,
               BusinessErrorCodes.INSUFFICIENT_KIBBLES ->
           HttpStatus.CONFLICT;
 
@@ -168,6 +171,8 @@ public class GlobalExceptionHandler {
               BusinessErrorCodes.MISSING_LAST_NAME,
               BusinessErrorCodes.MISSING_BIRTHDATE,
               BusinessErrorCodes.INVALID_BIRTHDATE_FORMAT,
+              BusinessErrorCodes.INVALID_MATCH_TEAMS,
+              BusinessErrorCodes.INVALID_MATCH_WINNER,
               BusinessErrorCodes.USER_TOO_YOUNG ->
           HttpStatus.BAD_REQUEST;
 
