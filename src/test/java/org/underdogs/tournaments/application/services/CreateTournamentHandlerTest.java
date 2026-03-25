@@ -1,5 +1,12 @@
 package org.underdogs.tournaments.application.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,86 +21,71 @@ import org.underdogs.tournaments.application.models.CreateTournamentRequest;
 import org.underdogs.tournaments.domain.Tournament;
 import org.underdogs.tournaments.domain.TournamentId;
 
-import java.time.LocalDate;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class CreateTournamentHandlerTest {
 
-    @Mock
-    private TournamentRepository tournamentRepository;
+  @Mock private TournamentRepository tournamentRepository;
 
-    @Mock
-    private DomainIdGenerator domainIdGenerator;
+  @Mock private DomainIdGenerator domainIdGenerator;
 
-    private CreateTournamentHandler handler;
+  private CreateTournamentHandler handler;
 
-    @BeforeEach
-    void setUp() {
-        handler = new CreateTournamentHandler(tournamentRepository, domainIdGenerator);
-    }
+  @BeforeEach
+  void setUp() {
+    handler = new CreateTournamentHandler(tournamentRepository, domainIdGenerator);
+  }
 
-    @Test
-    void shouldCreateTournamentSuccessfully() {
-        CreateTournamentRequest request = new CreateTournamentRequest(
-                "Worlds 2026",
-                Game.LEAGUE_OF_LEGENDS,
-                LocalDate.of(2026, 10, 1),
-                LocalDate.of(2026, 11, 5)
-        );
+  @Test
+  void shouldCreateTournamentSuccessfully() {
+    CreateTournamentRequest request =
+        new CreateTournamentRequest(
+            "Worlds 2026",
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDate.of(2026, 10, 1),
+            LocalDate.of(2026, 11, 5));
 
-        when(tournamentRepository.findByName("Worlds 2026")).thenReturn(Optional.empty());
-        when(domainIdGenerator.generate()).thenReturn("tournament-id-123");
+    when(tournamentRepository.findByName("Worlds 2026")).thenReturn(Optional.empty());
+    when(domainIdGenerator.generate()).thenReturn("tournament-id-123");
 
-        TournamentId result = handler.handle(request);
+    TournamentId result = handler.handle(request);
 
-        assertEquals("tournament-id-123", result.value());
-        verify(tournamentRepository).save(any(Tournament.class));
-    }
+    assertEquals("tournament-id-123", result.value());
+    verify(tournamentRepository).save(any(Tournament.class));
+  }
 
-    @Test
-    void shouldThrowWhenTournamentAlreadyExists() {
-        CreateTournamentRequest request = new CreateTournamentRequest(
-                "Worlds 2026",
-                Game.LEAGUE_OF_LEGENDS,
-                LocalDate.of(2026, 10, 1),
-                LocalDate.of(2026, 11, 5)
-        );
+  @Test
+  void shouldThrowWhenTournamentAlreadyExists() {
+    CreateTournamentRequest request =
+        new CreateTournamentRequest(
+            "Worlds 2026",
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDate.of(2026, 10, 1),
+            LocalDate.of(2026, 11, 5));
 
-        when(tournamentRepository.findByName("Worlds 2026"))
-                .thenReturn(Optional.of(mock(Tournament.class)));
+    when(tournamentRepository.findByName("Worlds 2026"))
+        .thenReturn(Optional.of(mock(Tournament.class)));
 
-        BusinessException exception = assertThrows(
-                BusinessException.class,
-                () -> handler.handle(request)
-        );
+    BusinessException exception =
+        assertThrows(BusinessException.class, () -> handler.handle(request));
 
-        assertEquals(BusinessErrorCodes.TOURNAMENT_ALREADY_EXISTS, exception.getCode());
-        verify(tournamentRepository, never()).save(any());
-    }
+    assertEquals(BusinessErrorCodes.TOURNAMENT_ALREADY_EXISTS, exception.getCode());
+    verify(tournamentRepository, never()).save(any());
+  }
 
-    @Test
-    void shouldThrowWhenEndDateIsBeforeStartDate() {
-        CreateTournamentRequest request = new CreateTournamentRequest(
-                "Worlds 2026",
-                Game.LEAGUE_OF_LEGENDS,
-                LocalDate.of(2026, 11, 5),
-                LocalDate.of(2026, 10, 1)
-        );
+  @Test
+  void shouldThrowWhenEndDateIsBeforeStartDate() {
+    CreateTournamentRequest request =
+        new CreateTournamentRequest(
+            "Worlds 2026",
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDate.of(2026, 11, 5),
+            LocalDate.of(2026, 10, 1));
 
-        when(tournamentRepository.findByName("Worlds 2026")).thenReturn(Optional.empty());
-        when(domainIdGenerator.generate()).thenReturn("tournament-id-123");
+    when(tournamentRepository.findByName("Worlds 2026")).thenReturn(Optional.empty());
+    when(domainIdGenerator.generate()).thenReturn("tournament-id-123");
 
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> handler.handle(request)
-        );
+    assertThrows(IllegalArgumentException.class, () -> handler.handle(request));
 
-        verify(tournamentRepository, never()).save(any());
-    }
+    verify(tournamentRepository, never()).save(any());
+  }
 }
