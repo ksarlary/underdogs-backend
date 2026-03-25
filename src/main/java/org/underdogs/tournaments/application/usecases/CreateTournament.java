@@ -1,4 +1,8 @@
 package org.underdogs.tournaments.application.usecases;
 
-public class CreateTournament {
+import org.underdogs.tournaments.application.models.CreateTournamentRequest;
+import org.underdogs.tournaments.domain.TournamentId;
+
+public interface CreateTournament {
+  TournamentId handle(CreateTournamentRequest request);
 }

@@ -1,4 +1,9 @@
 package org.underdogs.tournaments.application.usecases;
 
-public class SearchTournamentById {
+import java.util.Optional;
+import org.underdogs.tournaments.domain.Tournament;
+import org.underdogs.tournaments.domain.TournamentId;
+
+public interface SearchTournamentById {
+  Optional<Tournament> handle(TournamentId id);
 }

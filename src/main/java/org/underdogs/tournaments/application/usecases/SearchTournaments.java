@@ -1,4 +1,8 @@
 package org.underdogs.tournaments.application.usecases;
 
-public class SearchTournaments {
+import java.util.List;
+import org.underdogs.tournaments.domain.Tournament;
+
+public interface SearchTournaments {
+  List<Tournament> handle();
 }

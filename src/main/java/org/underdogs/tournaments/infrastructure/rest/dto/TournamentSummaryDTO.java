@@ -1,4 +1,3 @@
 package org.underdogs.tournaments.infrastructure.rest.dto;
 
-public class TournamentSummaryDTO {
-}
+public record TournamentSummaryDTO(String id, String name, String game) {}

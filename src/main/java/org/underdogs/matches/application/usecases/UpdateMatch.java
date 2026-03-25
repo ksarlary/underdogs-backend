@@ -1,4 +1,8 @@
 package org.underdogs.matches.application.usecases;
 
-public class UpdateMatch {
+import org.underdogs.matches.application.models.UpdateMatchRequest;
+import org.underdogs.matches.domain.MatchId;
+
+public interface UpdateMatch {
+  void handle(MatchId id, UpdateMatchRequest request);
 }

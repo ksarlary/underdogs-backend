@@ -1,4 +1,7 @@
 package org.underdogs.tournaments.application.usecases;
 
-public class DeleteTournament {
+import org.underdogs.tournaments.domain.TournamentId;
+
+public interface DeleteTournament {
+  void handle(TournamentId id);
 }

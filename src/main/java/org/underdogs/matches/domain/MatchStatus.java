@@ -1,4 +1,8 @@
 package org.underdogs.matches.domain;
 
-public class MatchStatus {
+public enum MatchStatus {
+  SCHEDULED,
+  LIVE,
+  FINISHED,
+  CANCELLED
 }

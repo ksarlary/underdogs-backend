@@ -1,4 +1,7 @@
 package org.underdogs.matches.application.usecases;
 
-public class DeleteMatch {
+import org.underdogs.matches.domain.MatchId;
+
+public interface DeleteMatch {
+  void handle(MatchId id);
 }
