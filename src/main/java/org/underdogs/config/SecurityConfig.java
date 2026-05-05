@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,9 +21,20 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers("/actuator/health")
-                    .permitAll()
+            auth -> auth
+                    // OpenAPI & health public routes
+                    .requestMatchers(
+                            "/actuator/health",
+                            "/swagger-ui/**",
+                            "/swagger-ui.html",
+                            "/v3/api-docs/**"
+                    ).permitAll()
+                    // Public read-only routes
+                    .requestMatchers(HttpMethod.GET, "/api/v1/teams/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/players/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/tournaments/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/matches/**").permitAll()
+
                     .requestMatchers("/api/v1/teams", "/api/v1/teams/*")
                     .authenticated()
                     .requestMatchers("/api/v1/players", "/api/v1/players/*")
