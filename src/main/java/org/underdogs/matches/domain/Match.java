@@ -14,7 +14,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import org.underdogs.shared.error.BusinessErrorCodes;
 import org.underdogs.shared.error.BusinessException;
 import org.underdogs.teams.domain.Game;
@@ -59,6 +61,8 @@ public class Match {
 
   @Column private Integer team2Score;
 
+  @Column private Instant liveStartedAt;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "winner_technical_id")
   private Team winner;
@@ -75,7 +79,8 @@ public class Match {
       MatchStatus status,
       Integer team1Score,
       Integer team2Score,
-      Team winner) {
+      Team winner,
+      Instant liveStartedAt) {
     this.id = id;
     this.team1 = team1;
     this.team2 = team2;
@@ -86,6 +91,7 @@ public class Match {
     this.team1Score = team1Score;
     this.team2Score = team2Score;
     this.winner = winner;
+    this.liveStartedAt = liveStartedAt;
   }
 
   public static Match create(
@@ -98,7 +104,17 @@ public class Match {
     validateTeams(team1, team2);
 
     return new Match(
-        id, team1, team2, tournament, game, scheduledAt, MatchStatus.SCHEDULED, null, null, null);
+        id,
+        team1,
+        team2,
+        tournament,
+        game,
+        scheduledAt,
+        MatchStatus.SCHEDULED,
+        null,
+        null,
+        null,
+        null);
   }
 
   public void update(
@@ -158,6 +174,44 @@ public class Match {
           BusinessErrorCodes.INVALID_MATCH_WINNER,
           "Winner must be one of the two teams in the match");
     }
+  }
+
+  public boolean containsTeam(Team team) {
+    if (team == null) {
+      return false;
+    }
+
+    return team1.getId().equals(team.getId()) || team2.getId().equals(team.getId());
+  }
+
+  public void startLive(Instant startedAt) {
+    if (startedAt == null) {
+      throw new IllegalArgumentException("Live start time cannot be null");
+    }
+
+    this.status = MatchStatus.LIVE;
+
+    if (this.liveStartedAt == null) {
+      this.liveStartedAt = startedAt;
+    }
+  }
+
+  public boolean isOpenForBets(Instant now) {
+    if (status == MatchStatus.SCHEDULED) {
+      return true;
+    }
+
+    if (status != MatchStatus.LIVE || liveStartedAt == null) {
+      return false;
+    }
+
+    Instant bettingDeadline = liveStartedAt.plus(5, ChronoUnit.MINUTES);
+
+    return !now.isAfter(bettingDeadline);
+  }
+
+  public Instant getLiveStartedAt() {
+    return liveStartedAt;
   }
 
   public Long getTechnicalId() {

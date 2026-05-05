@@ -27,7 +27,7 @@ class CreditKibblesHandler implements CreditKibbles {
             .findById(userId)
             .orElseThrow(() -> new BusinessException("USER_NOT_FOUND", "User not found"));
 
-    user.creditKibbles(amount, timeProvider.now());
+    user.creditKibbles(amount);
     userRepository.save(user);
   }
 }

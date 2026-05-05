@@ -3,6 +3,8 @@ package org.underdogs.users.domain;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.LocalDate;
+import org.underdogs.shared.error.BusinessErrorCodes;
+import org.underdogs.shared.error.BusinessException;
 import org.underdogs.users.application.models.CreateUserRequest;
 
 @Entity
@@ -119,23 +121,26 @@ public class User {
     this.updatedAt = updatedAt;
   }
 
-  public void creditKibbles(long amount, Instant updatedAt) {
+  public void creditKibbles(long amount) {
     if (amount <= 0) {
-      throw new IllegalArgumentException("Amount must be greater than 0");
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_KIBBLES_AMOUNT, "Amount must be positive");
     }
+
     this.kibblesBalance += amount;
-    this.updatedAt = updatedAt;
   }
 
-  public void debitKibbles(long amount, Instant updatedAt) {
+  public void debitKibbles(long amount) {
     if (amount <= 0) {
-      throw new IllegalArgumentException("Amount must be greater than 0");
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_KIBBLES_AMOUNT, "Amount must be positive");
     }
-    if (this.kibblesBalance < amount) {
-      throw new IllegalStateException("Insufficient kibbles balance");
+
+    if (kibblesBalance < amount) {
+      throw new BusinessException(BusinessErrorCodes.INSUFFICIENT_KIBBLES, "Not enough kibbles");
     }
-    this.kibblesBalance -= amount;
-    this.updatedAt = updatedAt;
+
+    kibblesBalance -= amount;
   }
 
   public Long getTechnicalId() {

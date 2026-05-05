@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -13,11 +14,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.underdogs.bets.application.usecases.ResolveMatchBets;
 import org.underdogs.matches.application.gateways.MatchRepository;
 import org.underdogs.matches.application.models.UpdateMatchRequest;
 import org.underdogs.matches.domain.Match;
 import org.underdogs.matches.domain.MatchId;
 import org.underdogs.matches.domain.MatchStatus;
+import org.underdogs.shared.TimeProvider;
 import org.underdogs.shared.error.BusinessErrorCodes;
 import org.underdogs.shared.error.BusinessException;
 import org.underdogs.teams.application.gateways.TeamRepository;
@@ -37,11 +40,17 @@ class UpdateMatchHandlerTest {
 
   @Mock private TournamentRepository tournamentRepository;
 
+  @Mock private TimeProvider timeProvider;
+
+  @Mock private ResolveMatchBets resolveMatchBets;
+
   private UpdateMatchHandler handler;
 
   @BeforeEach
   void setUp() {
-    handler = new UpdateMatchHandler(matchRepository, teamRepository, tournamentRepository);
+    handler =
+        new UpdateMatchHandler(
+            matchRepository, teamRepository, tournamentRepository, timeProvider, resolveMatchBets);
   }
 
   @Test
@@ -132,5 +141,42 @@ class UpdateMatchHandlerTest {
 
     assertEquals(BusinessErrorCodes.INVALID_MATCH_WINNER, exception.getCode());
     verify(matchRepository, never()).save(any());
+  }
+
+  @Test
+  void shouldUpdateMatchStatusToLive() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+
+    Tournament tournament =
+        Tournament.create(
+            new TournamentId("tournament-1"),
+            "Worlds 2026",
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDate.of(2026, 10, 1),
+            LocalDate.of(2026, 11, 5));
+
+    MatchId matchId = new MatchId("match-1");
+    Match match =
+        Match.create(
+            matchId,
+            team1,
+            team2,
+            tournament,
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+
+    UpdateMatchRequest request =
+        new UpdateMatchRequest(null, null, null, null, null, MatchStatus.LIVE, null, null, null);
+
+    when(matchRepository.findById(matchId)).thenReturn(Optional.of(match));
+    when(timeProvider.now()).thenReturn(Instant.parse("2026-03-21T10:00:00Z"));
+
+    handler.handle(matchId, request);
+
+    assertEquals(MatchStatus.LIVE, match.getStatus());
+    assertEquals(Instant.parse("2026-03-21T10:00:00Z"), match.getLiveStartedAt());
+
+    verify(matchRepository).save(match);
   }
 }

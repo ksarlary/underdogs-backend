@@ -2,10 +2,13 @@ package org.underdogs.matches.application.services;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.underdogs.bets.application.usecases.ResolveMatchBets;
 import org.underdogs.matches.application.gateways.MatchRepository;
 import org.underdogs.matches.application.models.UpdateMatchRequest;
 import org.underdogs.matches.application.usecases.UpdateMatch;
 import org.underdogs.matches.domain.MatchId;
+import org.underdogs.matches.domain.MatchStatus;
+import org.underdogs.shared.TimeProvider;
 import org.underdogs.shared.error.BusinessErrorCodes;
 import org.underdogs.shared.error.BusinessException;
 import org.underdogs.teams.application.gateways.TeamRepository;
@@ -21,14 +24,20 @@ class UpdateMatchHandler implements UpdateMatch {
   private final MatchRepository matchRepository;
   private final TeamRepository teamRepository;
   private final TournamentRepository tournamentRepository;
+  private final TimeProvider timeProvider;
+  private final ResolveMatchBets resolveMatchBets;
 
   UpdateMatchHandler(
       MatchRepository matchRepository,
       TeamRepository teamRepository,
-      TournamentRepository tournamentRepository) {
+      TournamentRepository tournamentRepository,
+      TimeProvider timeProvider,
+      ResolveMatchBets resolveMatchBets) {
     this.matchRepository = matchRepository;
     this.teamRepository = teamRepository;
     this.tournamentRepository = tournamentRepository;
+    this.timeProvider = timeProvider;
+    this.resolveMatchBets = resolveMatchBets;
   }
 
   @Override
@@ -83,17 +92,28 @@ class UpdateMatchHandler implements UpdateMatch {
                           BusinessErrorCodes.TEAM_NOT_FOUND, "Winner team not found"));
     }
 
+    MatchStatus statusToApply = request.status();
+
+    if (request.status() == MatchStatus.LIVE) {
+      match.startLive(timeProvider.now());
+      statusToApply = null;
+    }
+
     match.update(
         team1,
         team2,
         tournament,
         request.game(),
         request.scheduledAt(),
-        request.status(),
+        statusToApply,
         request.team1Score(),
         request.team2Score(),
         winner);
 
     matchRepository.save(match);
+
+    if (match.getStatus() == MatchStatus.FINISHED || match.getStatus() == MatchStatus.CANCELLED) {
+      resolveMatchBets.handle(match);
+    }
   }
 }

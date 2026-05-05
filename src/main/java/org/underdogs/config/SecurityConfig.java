@@ -21,20 +21,24 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(
-            auth -> auth
+            auth ->
+                auth
                     // OpenAPI & health public routes
                     .requestMatchers(
-                            "/actuator/health",
-                            "/swagger-ui/**",
-                            "/swagger-ui.html",
-                            "/v3/api-docs/**"
-                    ).permitAll()
+                        "/actuator/health", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
+                    .permitAll()
                     // Public read-only routes
-                    .requestMatchers(HttpMethod.GET, "/api/v1/teams/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/v1/players/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/v1/tournaments/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/v1/matches/**").permitAll()
-
+                    .requestMatchers(HttpMethod.GET, "/api/v1/teams/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/players/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/tournaments/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/matches/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/matches/*/odds")
+                    .permitAll()
+                    // rest
                     .requestMatchers("/api/v1/teams", "/api/v1/teams/*")
                     .authenticated()
                     .requestMatchers("/api/v1/players", "/api/v1/players/*")
