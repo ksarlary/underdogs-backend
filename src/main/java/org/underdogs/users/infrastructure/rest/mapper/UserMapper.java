@@ -15,7 +15,9 @@ public class UserMapper {
         user.getUsername(),
         user.getKibblesBalance(),
         user.getRole().name(),
-        user.getCreatedAt());
+        user.getCreatedAt(),
+        user.getStatus(),
+        user.getBlockedReason());
   }
 
   public UserDetailDTO toDetailDTO(User user) {
@@ -29,6 +31,8 @@ public class UserMapper {
         user.getBirthDate(),
         user.getKibblesBalance(),
         user.getRole().name(),
+        user.getStatus(),
+        user.getBlockedReason(),
         user.getCreatedAt(),
         user.getUpdatedAt());
   }

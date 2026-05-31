@@ -3,6 +3,8 @@ package org.underdogs.users.domain;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.LocalDate;
+import org.underdogs.shared.error.BusinessErrorCodes;
+import org.underdogs.shared.error.BusinessException;
 import org.underdogs.users.application.models.CreateUserRequest;
 
 @Entity
@@ -47,6 +49,13 @@ public class User {
   @Column(nullable = false)
   private Instant updatedAt;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 20)
+  private UserStatus status;
+
+  @Column(length = 255)
+  private String blockedReason;
+
   protected User() {}
 
   private User(
@@ -59,6 +68,7 @@ public class User {
       LocalDate birthDate,
       long kibblesBalance,
       UserRole role,
+      UserStatus status,
       Instant createdAt,
       Instant updatedAt) {
     this.id = id;
@@ -70,6 +80,7 @@ public class User {
     this.birthDate = birthDate;
     this.kibblesBalance = kibblesBalance;
     this.role = role;
+    this.status = status;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -85,6 +96,7 @@ public class User {
         request.birthDate(),
         1000L,
         UserRole.USER,
+        UserStatus.ACTIVE,
         now,
         now);
   }
@@ -108,6 +120,7 @@ public class User {
         birthDate,
         1000L,
         UserRole.USER,
+        UserStatus.ACTIVE,
         now,
         now);
   }
@@ -119,23 +132,46 @@ public class User {
     this.updatedAt = updatedAt;
   }
 
-  public void creditKibbles(long amount, Instant updatedAt) {
+  public void creditKibbles(long amount) {
     if (amount <= 0) {
-      throw new IllegalArgumentException("Amount must be greater than 0");
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_KIBBLES_AMOUNT, "Amount must be positive");
     }
+
     this.kibblesBalance += amount;
+  }
+
+  public void debitKibbles(long amount) {
+    if (amount <= 0) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_KIBBLES_AMOUNT, "Amount must be positive");
+    }
+
+    if (kibblesBalance < amount) {
+      throw new BusinessException(BusinessErrorCodes.INSUFFICIENT_KIBBLES, "Not enough kibbles");
+    }
+
+    kibblesBalance -= amount;
+  }
+
+  public void block(String reason, Instant updatedAt) {
+    if (reason == null || reason.isBlank()) {
+      throw new IllegalArgumentException("Blocked reason cannot be blank");
+    }
+
+    this.status = UserStatus.BLOCKED;
+    this.blockedReason = reason;
     this.updatedAt = updatedAt;
   }
 
-  public void debitKibbles(long amount, Instant updatedAt) {
-    if (amount <= 0) {
-      throw new IllegalArgumentException("Amount must be greater than 0");
-    }
-    if (this.kibblesBalance < amount) {
-      throw new IllegalStateException("Insufficient kibbles balance");
-    }
-    this.kibblesBalance -= amount;
+  public void activate(Instant updatedAt) {
+    this.status = UserStatus.ACTIVE;
+    this.blockedReason = null;
     this.updatedAt = updatedAt;
+  }
+
+  public boolean isBlocked() {
+    return status == UserStatus.BLOCKED;
   }
 
   public Long getTechnicalId() {
@@ -184,5 +220,13 @@ public class User {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public UserStatus getStatus() {
+    return status;
+  }
+
+  public String getBlockedReason() {
+    return blockedReason;
   }
 }

@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.underdogs.bets.application.models.MatchOddsResponse;
+import org.underdogs.bets.application.usecases.GetMatchOdds;
 import org.underdogs.matches.application.models.CreateMatchRequest;
 import org.underdogs.matches.application.models.UpdateMatchRequest;
 import org.underdogs.matches.application.usecases.CreateMatch;
@@ -29,6 +31,7 @@ public class MatchController {
   private final UpdateMatch updateMatch;
   private final DeleteMatch deleteMatch;
   private final MatchMapper matchMapper;
+  private final GetMatchOdds getMatchOdds;
 
   public MatchController(
       CreateMatch createMatch,
@@ -36,13 +39,15 @@ public class MatchController {
       SearchMatches searchMatches,
       UpdateMatch updateMatch,
       DeleteMatch deleteMatch,
-      MatchMapper matchMapper) {
+      MatchMapper matchMapper,
+      GetMatchOdds getMatchOdds) {
     this.createMatch = createMatch;
     this.searchMatchById = searchMatchById;
     this.searchMatches = searchMatches;
     this.updateMatch = updateMatch;
     this.deleteMatch = deleteMatch;
     this.matchMapper = matchMapper;
+    this.getMatchOdds = getMatchOdds;
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -79,5 +84,10 @@ public class MatchController {
   public ResponseEntity<Void> delete(@PathVariable UUID id) {
     deleteMatch.handle(new MatchId(id.toString()));
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/{id}/odds")
+  public ResponseEntity<MatchOddsResponse> getOdds(@PathVariable String id) {
+    return ResponseEntity.ok(getMatchOdds.handle(new MatchId(id)));
   }
 }

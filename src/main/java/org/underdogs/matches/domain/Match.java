@@ -14,7 +14,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import org.underdogs.shared.error.BusinessErrorCodes;
 import org.underdogs.shared.error.BusinessException;
 import org.underdogs.teams.domain.Game;
@@ -59,6 +61,8 @@ public class Match {
 
   @Column private Integer team2Score;
 
+  @Column private Instant liveStartedAt;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "winner_technical_id")
   private Team winner;
@@ -75,7 +79,8 @@ public class Match {
       MatchStatus status,
       Integer team1Score,
       Integer team2Score,
-      Team winner) {
+      Team winner,
+      Instant liveStartedAt) {
     this.id = id;
     this.team1 = team1;
     this.team2 = team2;
@@ -86,6 +91,7 @@ public class Match {
     this.team1Score = team1Score;
     this.team2Score = team2Score;
     this.winner = winner;
+    this.liveStartedAt = liveStartedAt;
   }
 
   public static Match create(
@@ -98,7 +104,17 @@ public class Match {
     validateTeams(team1, team2);
 
     return new Match(
-        id, team1, team2, tournament, game, scheduledAt, MatchStatus.SCHEDULED, null, null, null);
+        id,
+        team1,
+        team2,
+        tournament,
+        game,
+        scheduledAt,
+        MatchStatus.SCHEDULED,
+        null,
+        null,
+        null,
+        null);
   }
 
   public void update(
@@ -129,6 +145,7 @@ public class Match {
       this.scheduledAt = scheduledAt;
     }
     if (status != null) {
+      validateStatusTransition(this.status, status);
       this.status = status;
     }
 
@@ -137,6 +154,7 @@ public class Match {
     this.winner = winner;
 
     validateWinner();
+    validateFinishedMatchResult();
   }
 
   private static void validateTeams(Team team1, Team team2) {
@@ -158,6 +176,84 @@ public class Match {
           BusinessErrorCodes.INVALID_MATCH_WINNER,
           "Winner must be one of the two teams in the match");
     }
+  }
+
+  private void validateFinishedMatchResult() {
+    if (status != MatchStatus.FINISHED) {
+      return;
+    }
+
+    if (team1Score == null || team2Score == null) {
+      throw new BusinessException(
+          BusinessErrorCodes.MATCH_RESULT_REQUIRED,
+          "A finished match must have scores for both teams");
+    }
+
+    if (winner == null) {
+      throw new BusinessException(
+          BusinessErrorCodes.MATCH_WINNER_REQUIRED, "A finished match must have a winner");
+    }
+  }
+
+  private void validateStatusTransition(MatchStatus currentStatus, MatchStatus newStatus) {
+    if (newStatus == null || newStatus == currentStatus) {
+      return;
+    }
+
+    if (currentStatus == MatchStatus.FINISHED || currentStatus == MatchStatus.CANCELLED) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
+          "A finished or cancelled match cannot be updated to another status");
+    }
+
+    if (currentStatus == MatchStatus.LIVE && newStatus == MatchStatus.SCHEDULED) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
+          "A live match cannot go back to scheduled");
+    }
+  }
+
+  public boolean containsTeam(Team team) {
+    if (team == null) {
+      return false;
+    }
+
+    return team1.getId().equals(team.getId()) || team2.getId().equals(team.getId());
+  }
+
+  public void startLive(Instant startedAt) {
+    if (this.status == MatchStatus.LIVE) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
+          "A live match has already been started");
+    }
+
+    validateStatusTransition(this.status, MatchStatus.LIVE);
+
+    if (startedAt == null) {
+      throw new IllegalArgumentException("Live start time cannot be null");
+    }
+
+    this.status = MatchStatus.LIVE;
+    this.liveStartedAt = startedAt;
+  }
+
+  public boolean isOpenForBets(Instant now) {
+    if (status == MatchStatus.SCHEDULED) {
+      return true;
+    }
+
+    if (status != MatchStatus.LIVE || liveStartedAt == null) {
+      return false;
+    }
+
+    Instant bettingDeadline = liveStartedAt.plus(5, ChronoUnit.MINUTES);
+
+    return !now.isAfter(bettingDeadline);
+  }
+
+  public Instant getLiveStartedAt() {
+    return liveStartedAt;
   }
 
   public Long getTechnicalId() {

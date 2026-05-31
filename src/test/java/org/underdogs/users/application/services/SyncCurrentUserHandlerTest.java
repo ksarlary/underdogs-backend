@@ -1,7 +1,12 @@
 package org.underdogs.users.application.services;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -19,6 +24,8 @@ import org.underdogs.shared.error.BusinessErrorCodes;
 import org.underdogs.shared.error.BusinessException;
 import org.underdogs.users.application.gateways.UserRepository;
 import org.underdogs.users.domain.User;
+import org.underdogs.users.domain.UserId;
+import org.underdogs.users.domain.UserStatus;
 
 @ExtendWith(MockitoExtension.class)
 class SyncCurrentUserHandlerTest {
@@ -42,23 +49,38 @@ class SyncCurrentUserHandlerTest {
 
   @Test
   void shouldReturnExistingUserWhenAlreadyPresentInDatabase() {
+    Instant now = Instant.parse("2026-03-21T10:00:00Z");
+
     Jwt jwt =
         Jwt.withTokenValue("token")
             .header("alg", "none")
             .subject("external-auth-id")
-            .claim("email", "test@test.com")
-            .claim("preferred_username", "user1")
+            .claim("birthDate", "2000-10-12")
             .build();
 
-    User existingUser = mock(User.class);
+    User existingUser =
+        User.createFromIdentityProvider(
+            new UserId("user-id"),
+            "external-auth-id",
+            "ksarlary",
+            "test@example.com",
+            "Sofia",
+            "Konovalova",
+            LocalDate.of(2000, 10, 12),
+            now);
 
     when(userRepository.findByExternalAuthId("external-auth-id"))
         .thenReturn(Optional.of(existingUser));
+    when(timeProvider.now()).thenReturn(now);
+    when(birthDateParser.parse("2000-10-12")).thenReturn(LocalDate.of(2000, 10, 12));
 
     User result = handler.handle(jwt);
 
     assertEquals(existingUser, result);
-    verify(userRepository, never()).save(any());
+    assertEquals(UserStatus.ACTIVE, result.getStatus());
+    assertNull(result.getBlockedReason());
+
+    verify(userRepository).save(existingUser);
   }
 
   @Test
@@ -84,6 +106,9 @@ class SyncCurrentUserHandlerTest {
     User result = handler.handle(jwt);
 
     assertNotNull(result);
+    assertEquals(UserStatus.ACTIVE, result.getStatus());
+    assertNull(result.getBlockedReason());
+
     verify(userRepository).save(any(User.class));
   }
 
@@ -107,27 +132,30 @@ class SyncCurrentUserHandlerTest {
   }
 
   @Test
-  void shouldThrowWhenUserIsUnder18() {
+  void shouldBlockUserWhenUserIsUnder18() {
     Instant now = Instant.parse("2026-03-21T10:00:00Z");
 
     Jwt jwt =
         Jwt.withTokenValue("token")
             .header("alg", "none")
             .subject("external-auth-id")
-            .claim("email", "sofia@example.com")
-            .claim("preferred_username", "ksarlary1")
-            .claim("given_name", "Sofia")
-            .claim("family_name", "Konovalova")
-            .claim("birthDate", "12.10.2010")
+            .claim("email", "young@example.com")
+            .claim("preferred_username", "young_user")
+            .claim("given_name", "Young")
+            .claim("family_name", "User")
+            .claim("birthDate", "2010-01-01")
             .build();
 
     when(userRepository.findByExternalAuthId("external-auth-id")).thenReturn(Optional.empty());
-    when(birthDateParser.parse("12.10.2010")).thenReturn(LocalDate.of(2010, 10, 12));
+    when(domainIdGenerator.generate()).thenReturn("user-id");
     when(timeProvider.now()).thenReturn(now);
+    when(birthDateParser.parse("2010-01-01")).thenReturn(LocalDate.of(2010, 1, 1));
 
-    BusinessException exception = assertThrows(BusinessException.class, () -> handler.handle(jwt));
+    User user = handler.handle(jwt);
 
-    assertEquals(BusinessErrorCodes.USER_TOO_YOUNG, exception.getCode());
-    verify(userRepository, never()).save(any());
+    assertEquals(UserStatus.BLOCKED, user.getStatus());
+    assertEquals("You must be at least 18 years old to use Underdogs.", user.getBlockedReason());
+
+    verify(userRepository).save(user);
   }
 }

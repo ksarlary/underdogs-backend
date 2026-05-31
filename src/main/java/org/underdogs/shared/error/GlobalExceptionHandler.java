@@ -154,7 +154,8 @@ public class GlobalExceptionHandler {
               BusinessErrorCodes.TEAM_NOT_FOUND,
               BusinessErrorCodes.TOURNAMENT_NOT_FOUND,
               BusinessErrorCodes.MATCH_NOT_FOUND,
-              BusinessErrorCodes.PLAYER_NOT_FOUND ->
+              BusinessErrorCodes.PLAYER_NOT_FOUND,
+              BusinessErrorCodes.BET_NOT_FOUND ->
           HttpStatus.NOT_FOUND;
 
       case BusinessErrorCodes.USER_ALREADY_EXISTS,
@@ -162,7 +163,9 @@ public class GlobalExceptionHandler {
               BusinessErrorCodes.TEAM_TAG_ALREADY_EXISTS,
               BusinessErrorCodes.PLAYER_ALREADY_EXISTS,
               BusinessErrorCodes.TOURNAMENT_ALREADY_EXISTS,
-              BusinessErrorCodes.INSUFFICIENT_KIBBLES ->
+              BusinessErrorCodes.INSUFFICIENT_KIBBLES,
+              BusinessErrorCodes.BET_ALREADY_EXISTS,
+              BusinessErrorCodes.BET_ALREADY_RESOLVED ->
           HttpStatus.CONFLICT;
 
       case BusinessErrorCodes.MISSING_EMAIL,
@@ -173,8 +176,20 @@ public class GlobalExceptionHandler {
               BusinessErrorCodes.INVALID_BIRTHDATE_FORMAT,
               BusinessErrorCodes.INVALID_MATCH_TEAMS,
               BusinessErrorCodes.INVALID_MATCH_WINNER,
-              BusinessErrorCodes.USER_TOO_YOUNG ->
+              BusinessErrorCodes.USER_TOO_YOUNG,
+              BusinessErrorCodes.INVALID_KIBBLES_AMOUNT,
+              BusinessErrorCodes.INVALID_BET_AMOUNT,
+              BusinessErrorCodes.MATCH_NOT_OPEN_FOR_BETS,
+              BusinessErrorCodes.TEAM_NOT_IN_MATCH,
+              BusinessErrorCodes.INVALID_BET_COEFFICIENT,
+              BusinessErrorCodes.INVALID_POTENTIAL_GAIN,
+              BusinessErrorCodes.MATCH_RESULT_REQUIRED,
+              BusinessErrorCodes.MATCH_DRAW_NOT_ALLOWED,
+              BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
+              BusinessErrorCodes.MATCH_WINNER_REQUIRED ->
           HttpStatus.BAD_REQUEST;
+
+      case BusinessErrorCodes.USER_BLOCKED -> HttpStatus.FORBIDDEN;
 
       default -> HttpStatus.BAD_REQUEST;
     };

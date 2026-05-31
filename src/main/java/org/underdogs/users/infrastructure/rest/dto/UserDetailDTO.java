@@ -2,6 +2,7 @@ package org.underdogs.users.infrastructure.rest.dto;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import org.underdogs.users.domain.UserStatus;
 
 public record UserDetailDTO(
     String id,
@@ -13,5 +14,7 @@ public record UserDetailDTO(
     LocalDate birthDate,
     long kibblesBalance,
     String role,
+    UserStatus status,
+    String blockedReason,
     Instant createdAt,
     Instant updatedAt) {}
