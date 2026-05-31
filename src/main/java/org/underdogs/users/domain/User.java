@@ -49,6 +49,13 @@ public class User {
   @Column(nullable = false)
   private Instant updatedAt;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 20)
+  private UserStatus status;
+
+  @Column(length = 255)
+  private String blockedReason;
+
   protected User() {}
 
   private User(
@@ -61,6 +68,7 @@ public class User {
       LocalDate birthDate,
       long kibblesBalance,
       UserRole role,
+      UserStatus status,
       Instant createdAt,
       Instant updatedAt) {
     this.id = id;
@@ -72,6 +80,7 @@ public class User {
     this.birthDate = birthDate;
     this.kibblesBalance = kibblesBalance;
     this.role = role;
+    this.status = status;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -87,6 +96,7 @@ public class User {
         request.birthDate(),
         1000L,
         UserRole.USER,
+        UserStatus.ACTIVE,
         now,
         now);
   }
@@ -110,6 +120,7 @@ public class User {
         birthDate,
         1000L,
         UserRole.USER,
+        UserStatus.ACTIVE,
         now,
         now);
   }
@@ -141,6 +152,26 @@ public class User {
     }
 
     kibblesBalance -= amount;
+  }
+
+  public void block(String reason, Instant updatedAt) {
+    if (reason == null || reason.isBlank()) {
+      throw new IllegalArgumentException("Blocked reason cannot be blank");
+    }
+
+    this.status = UserStatus.BLOCKED;
+    this.blockedReason = reason;
+    this.updatedAt = updatedAt;
+  }
+
+  public void activate(Instant updatedAt) {
+    this.status = UserStatus.ACTIVE;
+    this.blockedReason = null;
+    this.updatedAt = updatedAt;
+  }
+
+  public boolean isBlocked() {
+    return status == UserStatus.BLOCKED;
   }
 
   public Long getTechnicalId() {
@@ -189,5 +220,13 @@ public class User {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public UserStatus getStatus() {
+    return status;
+  }
+
+  public String getBlockedReason() {
+    return blockedReason;
   }
 }

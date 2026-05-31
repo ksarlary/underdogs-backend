@@ -7,6 +7,7 @@ public final class BusinessErrorCodes {
   public static final String USER_NOT_FOUND = "USER_NOT_FOUND";
   public static final String USER_ALREADY_EXISTS = "USER_ALREADY_EXISTS";
   public static final String USER_TOO_YOUNG = "USER_TOO_YOUNG";
+  public static final String USER_BLOCKED = "USER_BLOCKED";
 
   public static final String MISSING_EMAIL = "MISSING_EMAIL";
   public static final String MISSING_USERNAME = "MISSING_USERNAME";
@@ -41,4 +42,7 @@ public final class BusinessErrorCodes {
   public static final String INVALID_POTENTIAL_GAIN = "INVALID_POTENTIAL_GAIN";
   public static final String BET_ALREADY_RESOLVED = "BET_ALREADY_RESOLVED";
   public static final String MATCH_WINNER_REQUIRED = "MATCH_WINNER_REQUIRED";
+  public static final String MATCH_RESULT_REQUIRED = "MATCH_RESULT_REQUIRED";
+  public static final String MATCH_DRAW_NOT_ALLOWED = "MATCH_DRAW_NOT_ALLOWED";
+  public static final String INVALID_MATCH_STATUS_TRANSITION = "INVALID_MATCH_STATUS_TRANSITION";
 }

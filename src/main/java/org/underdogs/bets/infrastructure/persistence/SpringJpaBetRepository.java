@@ -16,6 +16,8 @@ interface SpringJpaBetRepository extends JpaRepository<Bet, Long> {
 
   List<Bet> findByUser(User user);
 
+  List<Bet> findByMatch(Match match);
+
   boolean existsByUserAndMatch(User user, Match match);
 
   @Query(
@@ -35,6 +37,4 @@ interface SpringJpaBetRepository extends JpaRepository<Bet, Long> {
     WHERE b.match = :match
     """)
   long sumAmountByMatch(@Param("match") Match match);
-
-  List<Bet> findByMatch(Match match);
 }

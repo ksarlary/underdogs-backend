@@ -46,6 +46,15 @@ class UpdateMatchHandlerTest {
 
   private UpdateMatchHandler handler;
 
+  private Tournament createTournament() {
+    return Tournament.create(
+        new TournamentId("tournament-1"),
+        "Worlds 2026",
+        Game.LEAGUE_OF_LEGENDS,
+        LocalDate.of(2026, 10, 1),
+        LocalDate.of(2026, 11, 5));
+  }
+
   @BeforeEach
   void setUp() {
     handler =
@@ -178,5 +187,183 @@ class UpdateMatchHandlerTest {
     assertEquals(Instant.parse("2026-03-21T10:00:00Z"), match.getLiveStartedAt());
 
     verify(matchRepository).save(match);
+  }
+
+  @Test
+  void shouldThrowWhenLiveMatchGoesBackToScheduled() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament = createTournament();
+
+    Match match =
+        Match.create(
+            new MatchId("match-1"),
+            team1,
+            team2,
+            tournament,
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+
+    match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
+
+    UpdateMatchRequest request =
+        new UpdateMatchRequest(
+            null, null, null, null, null, MatchStatus.SCHEDULED, null, null, null);
+
+    when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
+
+    BusinessException exception =
+        assertThrows(
+            BusinessException.class, () -> handler.handle(new MatchId("match-1"), request));
+
+    assertEquals(BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION, exception.getCode());
+
+    verify(matchRepository, never()).save(any());
+    verify(resolveMatchBets, never()).handle(any());
+  }
+
+  @Test
+  void shouldThrowWhenFinishedMatchChangesStatus() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament = createTournament();
+
+    Match match =
+        Match.create(
+            new MatchId("match-1"),
+            team1,
+            team2,
+            tournament,
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+
+    match.update(null, null, null, null, null, MatchStatus.FINISHED, 2, 1, team1);
+
+    UpdateMatchRequest request =
+        new UpdateMatchRequest(null, null, null, null, null, MatchStatus.LIVE, null, null, null);
+
+    when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
+
+    BusinessException exception =
+        assertThrows(
+            BusinessException.class, () -> handler.handle(new MatchId("match-1"), request));
+
+    assertEquals(BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION, exception.getCode());
+
+    verify(matchRepository, never()).save(any());
+    verify(resolveMatchBets, never()).handle(any());
+  }
+
+  @Test
+  void shouldThrowWhenCancelledMatchChangesStatus() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament = createTournament();
+
+    Match match =
+        Match.create(
+            new MatchId("match-1"),
+            team1,
+            team2,
+            tournament,
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+
+    match.update(null, null, null, null, null, MatchStatus.CANCELLED, null, null, null);
+
+    UpdateMatchRequest request =
+        new UpdateMatchRequest(
+            null, null, null, null, null, MatchStatus.SCHEDULED, null, null, null);
+
+    when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
+
+    BusinessException exception =
+        assertThrows(
+            BusinessException.class, () -> handler.handle(new MatchId("match-1"), request));
+
+    assertEquals(BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION, exception.getCode());
+
+    verify(matchRepository, never()).save(any());
+    verify(resolveMatchBets, never()).handle(any());
+  }
+
+  @Test
+  void shouldResolveBetsWhenMatchBecomesFinished() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament = createTournament();
+
+    Match match =
+        Match.create(
+            new MatchId("match-1"),
+            team1,
+            team2,
+            tournament,
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+
+    UpdateMatchRequest request =
+        new UpdateMatchRequest(null, null, null, null, null, MatchStatus.FINISHED, 2, 1, "team-1");
+
+    when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
+    when(teamRepository.findById(new TeamId("team-1"))).thenReturn(Optional.of(team1));
+
+    handler.handle(new MatchId("match-1"), request);
+
+    verify(matchRepository).save(match);
+    verify(resolveMatchBets).handle(match);
+  }
+
+  @Test
+  void shouldResolveBetsWhenMatchBecomesCancelled() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament = createTournament();
+
+    Match match =
+        Match.create(
+            new MatchId("match-1"),
+            team1,
+            team2,
+            tournament,
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+
+    UpdateMatchRequest request =
+        new UpdateMatchRequest(
+            null, null, null, null, null, MatchStatus.CANCELLED, null, null, null);
+
+    when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
+
+    handler.handle(new MatchId("match-1"), request);
+
+    verify(matchRepository).save(match);
+    verify(resolveMatchBets).handle(match);
+  }
+
+  @Test
+  void shouldNotResolveBetsWhenStatusDoesNotBecomeFinal() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament = createTournament();
+
+    Match match =
+        Match.create(
+            new MatchId("match-1"),
+            team1,
+            team2,
+            tournament,
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+
+    UpdateMatchRequest request =
+        new UpdateMatchRequest(null, null, null, Game.VALORANT, null, null, null, null, null);
+
+    when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
+
+    handler.handle(new MatchId("match-1"), request);
+
+    verify(matchRepository).save(match);
+    verify(resolveMatchBets, never()).handle(any());
   }
 }

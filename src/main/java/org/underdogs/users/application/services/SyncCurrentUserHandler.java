@@ -1,6 +1,8 @@
 package org.underdogs.users.application.services;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZoneOffset;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -8,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.underdogs.shared.BirthDateParser;
 import org.underdogs.shared.DomainIdGenerator;
 import org.underdogs.shared.TimeProvider;
+import org.underdogs.shared.error.BusinessErrorCodes;
 import org.underdogs.shared.error.BusinessException;
 import org.underdogs.users.application.gateways.UserRepository;
 import org.underdogs.users.application.usecases.SyncCurrentUser;
@@ -16,6 +19,10 @@ import org.underdogs.users.domain.UserId;
 
 @Service
 class SyncCurrentUserHandler implements SyncCurrentUser {
+
+  private static final int MINIMUM_AGE = 18;
+  private static final String UNDERAGE_BLOCKED_REASON =
+      "You must be at least 18 years old to use Underdogs.";
 
   private final UserRepository userRepository;
   private final DomainIdGenerator domainIdGenerator;
@@ -40,7 +47,25 @@ class SyncCurrentUserHandler implements SyncCurrentUser {
 
     return userRepository
         .findByExternalAuthId(externalAuthId)
+        .map(existingUser -> syncExistingUser(existingUser, jwt))
         .orElseGet(() -> createUserFromJwt(jwt));
+  }
+
+  private User syncExistingUser(User user, Jwt jwt) {
+    final String birthDateClaim = jwt.getClaimAsString("birthDate");
+
+    if (birthDateClaim == null || birthDateClaim.isBlank()) {
+      throw new BusinessException(
+          BusinessErrorCodes.MISSING_BIRTHDATE, "Birth date is missing from the identity provider");
+    }
+
+    final LocalDate birthDate = birthDateParser.parse(birthDateClaim);
+    final Instant now = timeProvider.now();
+
+    syncUserStatus(user, birthDate, now);
+
+    userRepository.save(user);
+    return user;
   }
 
   private User createUserFromJwt(Jwt jwt) {
@@ -51,35 +76,33 @@ class SyncCurrentUserHandler implements SyncCurrentUser {
     final String birthDateClaim = jwt.getClaimAsString("birthDate");
 
     if (email == null || email.isBlank()) {
-      throw new BusinessException("MISSING_EMAIL", "Email is missing from the identity provider");
+      throw new BusinessException(
+          BusinessErrorCodes.MISSING_EMAIL, "Email is missing from the identity provider");
     }
 
     if (username == null || username.isBlank()) {
       throw new BusinessException(
-          "MISSING_USERNAME", "Username is missing from the identity provider");
+          BusinessErrorCodes.MISSING_USERNAME, "Username is missing from the identity provider");
     }
 
     if (firstName == null || firstName.isBlank()) {
       throw new BusinessException(
-          "MISSING_FIRST_NAME", "First name is missing from the identity provider");
+          BusinessErrorCodes.MISSING_FIRST_NAME,
+          "First name is missing from the identity provider");
     }
 
     if (lastName == null || lastName.isBlank()) {
       throw new BusinessException(
-          "MISSING_LAST_NAME", "Last name is missing from the identity provider");
+          BusinessErrorCodes.MISSING_LAST_NAME, "Last name is missing from the identity provider");
     }
 
     if (birthDateClaim == null || birthDateClaim.isBlank()) {
       throw new BusinessException(
-          "MISSING_BIRTHDATE", "Birth date is missing from the identity provider");
+          BusinessErrorCodes.MISSING_BIRTHDATE, "Birth date is missing from the identity provider");
     }
 
     final LocalDate birthDate = birthDateParser.parse(birthDateClaim);
-    final LocalDate today = timeProvider.now().atZone(ZoneOffset.UTC).toLocalDate();
-
-    if (birthDate.isAfter(today.minusYears(18))) {
-      throw new BusinessException("USER_TOO_YOUNG", "You must be at least 18 years old");
-    }
+    final Instant now = timeProvider.now();
 
     final User user =
         User.createFromIdentityProvider(
@@ -90,9 +113,27 @@ class SyncCurrentUserHandler implements SyncCurrentUser {
             firstName,
             lastName,
             birthDate,
-            timeProvider.now());
+            now);
+
+    syncUserStatus(user, birthDate, now);
 
     userRepository.save(user);
     return user;
+  }
+
+  private void syncUserStatus(User user, LocalDate birthDate, Instant now) {
+    if (isUnderage(birthDate, now)) {
+      user.block(UNDERAGE_BLOCKED_REASON, now);
+      return;
+    }
+
+    if (UNDERAGE_BLOCKED_REASON.equals(user.getBlockedReason())) {
+      user.activate(now);
+    }
+  }
+
+  private boolean isUnderage(LocalDate birthDate, Instant now) {
+    final LocalDate today = LocalDate.ofInstant(now, ZoneOffset.UTC);
+    return Period.between(birthDate, today).getYears() < MINIMUM_AGE;
   }
 }

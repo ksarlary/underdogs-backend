@@ -49,6 +49,7 @@ class UpdateMatchHandler implements UpdateMatch {
             .orElseThrow(
                 () -> new BusinessException(BusinessErrorCodes.MATCH_NOT_FOUND, "Match not found"));
 
+    final MatchStatus previousStatus = match.getStatus();
     Team team1 = null;
     Team team2 = null;
     Tournament tournament = null;
@@ -110,9 +111,14 @@ class UpdateMatchHandler implements UpdateMatch {
         request.team2Score(),
         winner);
 
+    final boolean shouldResolveBets =
+        previousStatus != match.getStatus()
+            && (match.getStatus() == MatchStatus.FINISHED
+                || match.getStatus() == MatchStatus.CANCELLED);
+
     matchRepository.save(match);
 
-    if (match.getStatus() == MatchStatus.FINISHED || match.getStatus() == MatchStatus.CANCELLED) {
+    if (shouldResolveBets) {
       resolveMatchBets.handle(match);
     }
   }

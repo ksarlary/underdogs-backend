@@ -145,6 +145,7 @@ public class Match {
       this.scheduledAt = scheduledAt;
     }
     if (status != null) {
+      validateStatusTransition(this.status, status);
       this.status = status;
     }
 
@@ -153,6 +154,7 @@ public class Match {
     this.winner = winner;
 
     validateWinner();
+    validateFinishedMatchResult();
   }
 
   private static void validateTeams(Team team1, Team team2) {
@@ -176,6 +178,41 @@ public class Match {
     }
   }
 
+  private void validateFinishedMatchResult() {
+    if (status != MatchStatus.FINISHED) {
+      return;
+    }
+
+    if (team1Score == null || team2Score == null) {
+      throw new BusinessException(
+          BusinessErrorCodes.MATCH_RESULT_REQUIRED,
+          "A finished match must have scores for both teams");
+    }
+
+    if (winner == null) {
+      throw new BusinessException(
+          BusinessErrorCodes.MATCH_WINNER_REQUIRED, "A finished match must have a winner");
+    }
+  }
+
+  private void validateStatusTransition(MatchStatus currentStatus, MatchStatus newStatus) {
+    if (newStatus == null || newStatus == currentStatus) {
+      return;
+    }
+
+    if (currentStatus == MatchStatus.FINISHED || currentStatus == MatchStatus.CANCELLED) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
+          "A finished or cancelled match cannot be updated to another status");
+    }
+
+    if (currentStatus == MatchStatus.LIVE && newStatus == MatchStatus.SCHEDULED) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
+          "A live match cannot go back to scheduled");
+    }
+  }
+
   public boolean containsTeam(Team team) {
     if (team == null) {
       return false;
@@ -185,15 +222,20 @@ public class Match {
   }
 
   public void startLive(Instant startedAt) {
+    if (this.status == MatchStatus.LIVE) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
+          "A live match has already been started");
+    }
+
+    validateStatusTransition(this.status, MatchStatus.LIVE);
+
     if (startedAt == null) {
       throw new IllegalArgumentException("Live start time cannot be null");
     }
 
     this.status = MatchStatus.LIVE;
-
-    if (this.liveStartedAt == null) {
-      this.liveStartedAt = startedAt;
-    }
+    this.liveStartedAt = startedAt;
   }
 
   public boolean isOpenForBets(Instant now) {

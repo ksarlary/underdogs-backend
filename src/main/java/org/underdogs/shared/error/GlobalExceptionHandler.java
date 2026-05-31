@@ -183,8 +183,13 @@ public class GlobalExceptionHandler {
               BusinessErrorCodes.TEAM_NOT_IN_MATCH,
               BusinessErrorCodes.INVALID_BET_COEFFICIENT,
               BusinessErrorCodes.INVALID_POTENTIAL_GAIN,
+              BusinessErrorCodes.MATCH_RESULT_REQUIRED,
+              BusinessErrorCodes.MATCH_DRAW_NOT_ALLOWED,
+              BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
               BusinessErrorCodes.MATCH_WINNER_REQUIRED ->
           HttpStatus.BAD_REQUEST;
+
+      case BusinessErrorCodes.USER_BLOCKED -> HttpStatus.FORBIDDEN;
 
       default -> HttpStatus.BAD_REQUEST;
     };

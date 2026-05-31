@@ -17,11 +17,11 @@ public interface BetRepository {
 
   List<Bet> findByUser(User user);
 
+  List<Bet> findByMatch(Match match);
+
   boolean existsByUserAndMatch(User user, Match match);
 
   long sumAmountByMatchAndSelectedTeam(Match match, Team selectedTeam);
 
   long sumAmountByMatch(Match match);
-
-  List<Bet> findByMatch(Match match);
 }
