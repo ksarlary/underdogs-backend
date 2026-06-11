@@ -2,7 +2,6 @@ package org.underdogs.config;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -32,10 +31,10 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(
-                    auth ->
-                            auth
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(
+            auth ->
+                auth
                     // OpenAPI & health public routes
                     .requestMatchers(
                         "/actuator/health", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
@@ -86,17 +85,11 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
 
-    configuration.setAllowedOrigins(
-            List.of(
-                    "http://localhost:5173",
-                    "http://localhost:3000"
-            ));
+    configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
 
-    configuration.setAllowedMethods(
-            List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
+    configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
 
-    configuration.setAllowedHeaders(
-            List.of("Authorization", "Content-Type"));
+    configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
     configuration.setAllowCredentials(true);
 
