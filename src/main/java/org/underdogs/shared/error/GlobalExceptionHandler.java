@@ -151,42 +151,42 @@ public class GlobalExceptionHandler {
   private HttpStatus mapBusinessCodeToStatus(String code) {
     return switch (code) {
       case BusinessErrorCodes.USER_NOT_FOUND,
-              BusinessErrorCodes.TEAM_NOT_FOUND,
-              BusinessErrorCodes.TOURNAMENT_NOT_FOUND,
-              BusinessErrorCodes.MATCH_NOT_FOUND,
-              BusinessErrorCodes.PLAYER_NOT_FOUND,
-              BusinessErrorCodes.BET_NOT_FOUND ->
+          BusinessErrorCodes.TEAM_NOT_FOUND,
+          BusinessErrorCodes.TOURNAMENT_NOT_FOUND,
+          BusinessErrorCodes.MATCH_NOT_FOUND,
+          BusinessErrorCodes.PLAYER_NOT_FOUND,
+          BusinessErrorCodes.BET_NOT_FOUND ->
           HttpStatus.NOT_FOUND;
 
       case BusinessErrorCodes.USER_ALREADY_EXISTS,
-              BusinessErrorCodes.TEAM_NAME_ALREADY_EXISTS,
-              BusinessErrorCodes.TEAM_TAG_ALREADY_EXISTS,
-              BusinessErrorCodes.PLAYER_ALREADY_EXISTS,
-              BusinessErrorCodes.TOURNAMENT_ALREADY_EXISTS,
-              BusinessErrorCodes.INSUFFICIENT_KIBBLES,
-              BusinessErrorCodes.BET_ALREADY_EXISTS,
-              BusinessErrorCodes.BET_ALREADY_RESOLVED ->
+          BusinessErrorCodes.TEAM_NAME_ALREADY_EXISTS,
+          BusinessErrorCodes.TEAM_TAG_ALREADY_EXISTS,
+          BusinessErrorCodes.PLAYER_ALREADY_EXISTS,
+          BusinessErrorCodes.TOURNAMENT_ALREADY_EXISTS,
+          BusinessErrorCodes.INSUFFICIENT_KIBBLES,
+          BusinessErrorCodes.BET_ALREADY_EXISTS,
+          BusinessErrorCodes.BET_ALREADY_RESOLVED ->
           HttpStatus.CONFLICT;
 
       case BusinessErrorCodes.MISSING_EMAIL,
-              BusinessErrorCodes.MISSING_USERNAME,
-              BusinessErrorCodes.MISSING_FIRST_NAME,
-              BusinessErrorCodes.MISSING_LAST_NAME,
-              BusinessErrorCodes.MISSING_BIRTHDATE,
-              BusinessErrorCodes.INVALID_BIRTHDATE_FORMAT,
-              BusinessErrorCodes.INVALID_MATCH_TEAMS,
-              BusinessErrorCodes.INVALID_MATCH_WINNER,
-              BusinessErrorCodes.USER_TOO_YOUNG,
-              BusinessErrorCodes.INVALID_KIBBLES_AMOUNT,
-              BusinessErrorCodes.INVALID_BET_AMOUNT,
-              BusinessErrorCodes.MATCH_NOT_OPEN_FOR_BETS,
-              BusinessErrorCodes.TEAM_NOT_IN_MATCH,
-              BusinessErrorCodes.INVALID_BET_COEFFICIENT,
-              BusinessErrorCodes.INVALID_POTENTIAL_GAIN,
-              BusinessErrorCodes.MATCH_RESULT_REQUIRED,
-              BusinessErrorCodes.MATCH_DRAW_NOT_ALLOWED,
-              BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
-              BusinessErrorCodes.MATCH_WINNER_REQUIRED ->
+          BusinessErrorCodes.MISSING_USERNAME,
+          BusinessErrorCodes.MISSING_FIRST_NAME,
+          BusinessErrorCodes.MISSING_LAST_NAME,
+          BusinessErrorCodes.MISSING_BIRTHDATE,
+          BusinessErrorCodes.INVALID_BIRTHDATE_FORMAT,
+          BusinessErrorCodes.INVALID_MATCH_TEAMS,
+          BusinessErrorCodes.INVALID_MATCH_WINNER,
+          BusinessErrorCodes.USER_TOO_YOUNG,
+          BusinessErrorCodes.INVALID_KIBBLES_AMOUNT,
+          BusinessErrorCodes.INVALID_BET_AMOUNT,
+          BusinessErrorCodes.MATCH_NOT_OPEN_FOR_BETS,
+          BusinessErrorCodes.TEAM_NOT_IN_MATCH,
+          BusinessErrorCodes.INVALID_BET_COEFFICIENT,
+          BusinessErrorCodes.INVALID_POTENTIAL_GAIN,
+          BusinessErrorCodes.MATCH_RESULT_REQUIRED,
+          BusinessErrorCodes.MATCH_DRAW_NOT_ALLOWED,
+          BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
+          BusinessErrorCodes.MATCH_WINNER_REQUIRED ->
           HttpStatus.BAD_REQUEST;
 
       case BusinessErrorCodes.USER_BLOCKED -> HttpStatus.FORBIDDEN;
