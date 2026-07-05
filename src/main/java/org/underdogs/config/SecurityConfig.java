@@ -49,7 +49,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/matches/**")
                     .permitAll()
-
+                    .requestMatchers(HttpMethod.GET, "/api/v2/matches/**")
+                    .permitAll()
                     // Protected routes
                     .requestMatchers("/api/v1/teams", "/api/v1/teams/*")
                     .authenticated()
