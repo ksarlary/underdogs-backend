@@ -25,6 +25,7 @@ public class BlockedUserFilter extends OncePerRequestFilter {
       List.of(
           "/api/v1/users/me",
           "/api/v1/matches",
+          "/api/v2/matches",
           "/api/v1/teams",
           "/api/v1/players",
           "/api/v1/tournaments",
