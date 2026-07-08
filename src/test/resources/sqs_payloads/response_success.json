@@ -1,0 +1,20 @@
+{
+  "correlation_id": "123e4567-e89b-12d3-a456-426614174000",
+  "event_id": "evt_98765",
+  "status": "SUCCESS",
+  "results": [
+    {
+      "bet_id": "bet_001",
+      "user_id": "usr_555",
+      "status": "WON",
+      "kibbles_to_credit": 150
+    },
+    {
+      "bet_id": "bet_002",
+      "user_id": "usr_777",
+      "status": "LOST",
+      "kibbles_to_credit": 0
+    }
+  ],
+  "error_message": null
+}
