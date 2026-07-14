@@ -12,8 +12,7 @@ public class BetResolutionService {
 
   public void processBetResolution(BetResolutionResponse response) {
     logger.info(
-        "Traitement de la résolution des paris pour correlation_id: {}",
-        response.correlationId());
+        "Traitement de la résolution des paris pour correlation_id: {}", response.correlationId());
 
     if ("success".equalsIgnoreCase(response.status())) {
       handleSuccessfulResolution(response);

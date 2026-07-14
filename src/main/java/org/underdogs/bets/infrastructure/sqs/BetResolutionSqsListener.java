@@ -25,8 +25,7 @@ public class BetResolutionSqsListener {
     try {
       logger.debug("Message SQS reçu pour résolution des paris: {}", message);
 
-      BetResolutionResponse response =
-          objectMapper.readValue(message, BetResolutionResponse.class);
+      BetResolutionResponse response = objectMapper.readValue(message, BetResolutionResponse.class);
 
       logger.info(
           "Message SQS désérialisé avec correlation_id: {}, status: {}",
