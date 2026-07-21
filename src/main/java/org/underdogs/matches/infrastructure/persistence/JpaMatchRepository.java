@@ -1,11 +1,13 @@
 package org.underdogs.matches.infrastructure.persistence;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 import org.underdogs.matches.application.gateways.MatchRepository;
 import org.underdogs.matches.domain.Match;
 import org.underdogs.matches.domain.MatchId;
+import org.underdogs.matches.domain.MatchStatus;
 
 @Repository
 class JpaMatchRepository implements MatchRepository {
@@ -34,5 +36,10 @@ class JpaMatchRepository implements MatchRepository {
   @Override
   public List<Match> findAll() {
     return jpaRepository.findAll();
+  }
+
+  @Override
+  public List<Match> findScheduledMatchesToStart(LocalDateTime now) {
+    return jpaRepository.findByStatusAndScheduledAtLessThanEqual(MatchStatus.SCHEDULED, now);
   }
 }
