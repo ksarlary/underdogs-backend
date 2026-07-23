@@ -5,9 +5,16 @@ import org.springframework.stereotype.Component;
 import org.underdogs.matches.domain.Match;
 import org.underdogs.matches.infrastructure.rest.dto.MatchDetailDTO;
 import org.underdogs.matches.infrastructure.rest.dto.MatchSummaryDTO;
+import org.underdogs.shared.TimeProvider;
 
 @Component
 public class MatchMapper {
+
+  private final TimeProvider timeProvider;
+
+  public MatchMapper(TimeProvider timeProvider) {
+    this.timeProvider = timeProvider;
+  }
 
   public MatchSummaryDTO toSummaryDTO(Match match) {
     return new MatchSummaryDTO(
@@ -34,7 +41,9 @@ public class MatchMapper {
         match.getScheduledAt(),
         match.getStatus(),
         match.getWinner() != null ? match.getWinner().getId().value() : null,
-        match.getWinner() != null ? match.getWinner().getName() : null);
+        match.getWinner() != null ? match.getWinner().getName() : null,
+        match.isOpenForBets(timeProvider.now()),
+        match.getBettingClosesAt());
   }
 
   public List<MatchSummaryDTO> toSummaryDTOList(List<Match> matches) {

@@ -243,13 +243,21 @@ public class Match {
       return true;
     }
 
-    if (status != MatchStatus.LIVE || liveStartedAt == null) {
+    Instant bettingClosesAt = getBettingClosesAt();
+
+    if (bettingClosesAt == null) {
       return false;
     }
 
-    Instant bettingDeadline = liveStartedAt.plus(5, ChronoUnit.MINUTES);
+    return !now.isAfter(bettingClosesAt);
+  }
 
-    return !now.isAfter(bettingDeadline);
+  public Instant getBettingClosesAt() {
+    if (status != MatchStatus.LIVE || liveStartedAt == null) {
+      return null;
+    }
+
+    return liveStartedAt.plus(5, ChronoUnit.MINUTES);
   }
 
   public Instant getLiveStartedAt() {
