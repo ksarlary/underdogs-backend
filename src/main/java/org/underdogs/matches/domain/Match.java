@@ -211,6 +211,19 @@ public class Match {
       throw new BusinessException(
           BusinessErrorCodes.MATCH_WINNER_REQUIRED, "A finished match must have a winner");
     }
+
+    if (team1Score.equals(team2Score)) {
+      throw new BusinessException(
+          BusinessErrorCodes.MATCH_DRAW_NOT_ALLOWED, "A finished match cannot end in a draw");
+    }
+
+    Team expectedWinner = team1Score > team2Score ? team1 : team2;
+
+    if (!winner.getId().equals(expectedWinner.getId())) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_WINNER_SCORE,
+          "Winner must be the team with the highest score");
+    }
   }
 
   private void validateStatusTransition(MatchStatus currentStatus, MatchStatus newStatus) {
@@ -228,6 +241,12 @@ public class Match {
       throw new BusinessException(
           BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
           "A live match cannot go back to scheduled");
+    }
+
+    if (currentStatus == MatchStatus.SCHEDULED && newStatus == MatchStatus.FINISHED) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
+          "A match must be live before it can be finished");
     }
   }
 

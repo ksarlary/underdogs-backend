@@ -83,6 +83,7 @@ class UpdateMatchHandlerTest {
             tournament,
             Game.LEAGUE_OF_LEGENDS,
             LocalDateTime.of(2026, 10, 10, 18, 0));
+    match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     UpdateMatchRequest request =
         new UpdateMatchRequest(null, null, null, null, null, MatchStatus.FINISHED, 2, 1, "team-1");
@@ -97,6 +98,37 @@ class UpdateMatchHandlerTest {
     assertEquals(2, match.getTeam1Score());
     assertEquals(1, match.getTeam2Score());
     assertEquals(team1, match.getWinner());
+  }
+
+  @Test
+  void shouldThrowWhenScheduledMatchIsFinishedDirectly() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament = createTournament();
+
+    Match match =
+        Match.create(
+            new MatchId("match-1"),
+            team1,
+            team2,
+            tournament,
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+
+    UpdateMatchRequest request =
+        new UpdateMatchRequest(
+            null, null, null, null, null, MatchStatus.FINISHED, null, null, null);
+
+    when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
+
+    BusinessException exception =
+        assertThrows(
+            BusinessException.class, () -> handler.handle(new MatchId("match-1"), request));
+
+    assertEquals(BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION, exception.getCode());
+
+    verify(matchRepository, never()).save(any());
+    verify(resolveMatchBets, never()).handle(any());
   }
 
   @Test
@@ -138,6 +170,7 @@ class UpdateMatchHandlerTest {
             tournament,
             Game.LEAGUE_OF_LEGENDS,
             LocalDateTime.of(2026, 10, 10, 18, 0));
+    match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     UpdateMatchRequest request =
         new UpdateMatchRequest(null, null, null, null, null, MatchStatus.FINISHED, 2, 1, "team-3");
@@ -150,6 +183,70 @@ class UpdateMatchHandlerTest {
 
     assertEquals(BusinessErrorCodes.INVALID_MATCH_WINNER, exception.getCode());
     verify(matchRepository, never()).save(any());
+  }
+
+  @Test
+  void shouldThrowWhenFinishedMatchEndsInDraw() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament = createTournament();
+
+    Match match =
+        Match.create(
+            new MatchId("match-1"),
+            team1,
+            team2,
+            tournament,
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+    match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
+
+    UpdateMatchRequest request =
+        new UpdateMatchRequest(null, null, null, null, null, MatchStatus.FINISHED, 1, 1, "team-1");
+
+    when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
+    when(teamRepository.findById(new TeamId("team-1"))).thenReturn(Optional.of(team1));
+
+    BusinessException exception =
+        assertThrows(
+            BusinessException.class, () -> handler.handle(new MatchId("match-1"), request));
+
+    assertEquals(BusinessErrorCodes.MATCH_DRAW_NOT_ALLOWED, exception.getCode());
+
+    verify(matchRepository, never()).save(any());
+    verify(resolveMatchBets, never()).handle(any());
+  }
+
+  @Test
+  void shouldThrowWhenFinishedMatchWinnerHasLowestScore() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament = createTournament();
+
+    Match match =
+        Match.create(
+            new MatchId("match-1"),
+            team1,
+            team2,
+            tournament,
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+    match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
+
+    UpdateMatchRequest request =
+        new UpdateMatchRequest(null, null, null, null, null, MatchStatus.FINISHED, 1, 2, "team-1");
+
+    when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
+    when(teamRepository.findById(new TeamId("team-1"))).thenReturn(Optional.of(team1));
+
+    BusinessException exception =
+        assertThrows(
+            BusinessException.class, () -> handler.handle(new MatchId("match-1"), request));
+
+    assertEquals(BusinessErrorCodes.INVALID_MATCH_WINNER_SCORE, exception.getCode());
+
+    verify(matchRepository, never()).save(any());
+    verify(resolveMatchBets, never()).handle(any());
   }
 
   @Test
@@ -236,6 +333,7 @@ class UpdateMatchHandlerTest {
             tournament,
             Game.LEAGUE_OF_LEGENDS,
             LocalDateTime.of(2026, 10, 10, 18, 0));
+    match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     match.update(null, null, null, null, null, MatchStatus.FINISHED, 2, 1, team1);
 
@@ -301,6 +399,7 @@ class UpdateMatchHandlerTest {
             tournament,
             Game.LEAGUE_OF_LEGENDS,
             LocalDateTime.of(2026, 10, 10, 18, 0));
+    match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     match.update(null, null, null, null, null, MatchStatus.FINISHED, 2, 1, team1);
 
@@ -333,6 +432,7 @@ class UpdateMatchHandlerTest {
             tournament,
             Game.LEAGUE_OF_LEGENDS,
             LocalDateTime.of(2026, 10, 10, 18, 0));
+    match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     UpdateMatchRequest request =
         new UpdateMatchRequest(null, null, null, null, null, MatchStatus.FINISHED, 2, 1, "team-1");

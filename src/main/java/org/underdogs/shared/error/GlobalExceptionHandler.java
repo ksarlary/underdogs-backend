@@ -187,6 +187,7 @@ public class GlobalExceptionHandler {
           BusinessErrorCodes.MATCH_DRAW_NOT_ALLOWED,
           BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
           BusinessErrorCodes.MATCH_NOT_EDITABLE,
+          BusinessErrorCodes.INVALID_MATCH_WINNER_SCORE,
           BusinessErrorCodes.MATCH_WINNER_REQUIRED ->
           HttpStatus.BAD_REQUEST;
 

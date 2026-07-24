@@ -46,4 +46,5 @@ public final class BusinessErrorCodes {
   public static final String MATCH_DRAW_NOT_ALLOWED = "MATCH_DRAW_NOT_ALLOWED";
   public static final String INVALID_MATCH_STATUS_TRANSITION = "INVALID_MATCH_STATUS_TRANSITION";
   public static final String MATCH_NOT_EDITABLE = "MATCH_NOT_EDITABLE";
+  public static final String INVALID_MATCH_WINNER_SCORE = "INVALID_MATCH_WINNER_SCORE";
 }
