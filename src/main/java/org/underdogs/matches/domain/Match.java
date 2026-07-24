@@ -127,6 +127,8 @@ public class Match {
       Integer team1Score,
       Integer team2Score,
       Team winner) {
+    validateEditableFields(team1, team2, tournament, game, scheduledAt);
+
     Team newTeam1 = team1 != null ? team1 : this.team1;
     Team newTeam2 = team2 != null ? team2 : this.team2;
 
@@ -165,6 +167,22 @@ public class Match {
     if (team1.getId().equals(team2.getId())) {
       throw new BusinessException(
           BusinessErrorCodes.INVALID_MATCH_TEAMS, "A team cannot play against itself");
+    }
+  }
+
+  private void validateEditableFields(
+      Team team1, Team team2, Tournament tournament, Game game, LocalDateTime scheduledAt) {
+    if (status == MatchStatus.SCHEDULED) {
+      return;
+    }
+
+    if (team1 != null
+        || team2 != null
+        || tournament != null
+        || game != null
+        || scheduledAt != null) {
+      throw new BusinessException(
+          BusinessErrorCodes.MATCH_NOT_EDITABLE, "Only scheduled matches can be reprogrammed");
     }
   }
 
