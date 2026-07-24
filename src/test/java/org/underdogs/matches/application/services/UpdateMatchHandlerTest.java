@@ -489,7 +489,8 @@ class UpdateMatchHandlerTest {
             LocalDateTime.of(2026, 10, 10, 18, 0));
 
     UpdateMatchRequest request =
-        new UpdateMatchRequest(null, null, null, Game.VALORANT, null, null, null, null, null);
+        new UpdateMatchRequest(
+            null, null, null, null, LocalDateTime.of(2026, 10, 15, 18, 0), null, null, null, null);
 
     when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
 

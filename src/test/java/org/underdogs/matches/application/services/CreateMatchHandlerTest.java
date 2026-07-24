@@ -135,4 +135,70 @@ class CreateMatchHandlerTest {
     assertEquals(BusinessErrorCodes.INVALID_MATCH_TEAMS, exception.getCode());
     verify(matchRepository, never()).save(any());
   }
+
+  @Test
+  void shouldThrowWhenTeamGameDoesNotMatchMatchGame() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.VALORANT);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament =
+        Tournament.create(
+            new TournamentId("tournament-1"),
+            "Worlds 2026",
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDate.of(2026, 10, 1),
+            LocalDate.of(2026, 11, 5));
+
+    CreateMatchRequest request =
+        new CreateMatchRequest(
+            "team-1",
+            "team-2",
+            "tournament-1",
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+
+    when(teamRepository.findById(new TeamId("team-1"))).thenReturn(Optional.of(team1));
+    when(teamRepository.findById(new TeamId("team-2"))).thenReturn(Optional.of(team2));
+    when(tournamentRepository.findById(new TournamentId("tournament-1")))
+        .thenReturn(Optional.of(tournament));
+    when(domainIdGenerator.generate()).thenReturn("match-id-123");
+
+    BusinessException exception =
+        assertThrows(BusinessException.class, () -> handler.handle(request));
+
+    assertEquals(BusinessErrorCodes.INVALID_MATCH_GAME, exception.getCode());
+    verify(matchRepository, never()).save(any());
+  }
+
+  @Test
+  void shouldThrowWhenScheduledAtIsOutsideTournamentPeriod() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament =
+        Tournament.create(
+            new TournamentId("tournament-1"),
+            "Worlds 2026",
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDate.of(2026, 10, 1),
+            LocalDate.of(2026, 11, 5));
+
+    CreateMatchRequest request =
+        new CreateMatchRequest(
+            "team-1",
+            "team-2",
+            "tournament-1",
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 12, 1, 18, 0));
+
+    when(teamRepository.findById(new TeamId("team-1"))).thenReturn(Optional.of(team1));
+    when(teamRepository.findById(new TeamId("team-2"))).thenReturn(Optional.of(team2));
+    when(tournamentRepository.findById(new TournamentId("tournament-1")))
+        .thenReturn(Optional.of(tournament));
+    when(domainIdGenerator.generate()).thenReturn("match-id-123");
+
+    BusinessException exception =
+        assertThrows(BusinessException.class, () -> handler.handle(request));
+
+    assertEquals(BusinessErrorCodes.MATCH_DATE_OUTSIDE_TOURNAMENT, exception.getCode());
+    verify(matchRepository, never()).save(any());
+  }
 }

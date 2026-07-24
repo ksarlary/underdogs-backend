@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import org.underdogs.shared.error.BusinessErrorCodes;
@@ -102,6 +103,8 @@ public class Match {
       Game game,
       LocalDateTime scheduledAt) {
     validateTeams(team1, team2);
+    validateGameConsistency(team1, team2, tournament, game);
+    validateScheduledAtWithinTournament(tournament, scheduledAt);
 
     return new Match(
         id,
@@ -131,8 +134,16 @@ public class Match {
 
     Team newTeam1 = team1 != null ? team1 : this.team1;
     Team newTeam2 = team2 != null ? team2 : this.team2;
+    Tournament newTournament = tournament != null ? tournament : this.tournament;
+    Game newGame = game != null ? game : this.game;
+    LocalDateTime newScheduledAt = scheduledAt != null ? scheduledAt : this.scheduledAt;
 
     validateTeams(newTeam1, newTeam2);
+    validateGameConsistency(newTeam1, newTeam2, newTournament, newGame);
+    validateScheduledAtWithinTournament(newTournament, newScheduledAt);
+    if (status != null) {
+      validateStatusTransition(this.status, status);
+    }
 
     this.team1 = newTeam1;
     this.team2 = newTeam2;
@@ -147,7 +158,6 @@ public class Match {
       this.scheduledAt = scheduledAt;
     }
     if (status != null) {
-      validateStatusTransition(this.status, status);
       this.status = status;
     }
 
@@ -167,6 +177,27 @@ public class Match {
     if (team1.getId().equals(team2.getId())) {
       throw new BusinessException(
           BusinessErrorCodes.INVALID_MATCH_TEAMS, "A team cannot play against itself");
+    }
+  }
+
+  private static void validateGameConsistency(
+      Team team1, Team team2, Tournament tournament, Game game) {
+    if (team1.getGame() != game || team2.getGame() != game || tournament.getGame() != game) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_GAME,
+          "Teams and tournament must belong to the match's game");
+    }
+  }
+
+  private static void validateScheduledAtWithinTournament(
+      Tournament tournament, LocalDateTime scheduledAt) {
+    LocalDate matchDate = scheduledAt.toLocalDate();
+
+    if (matchDate.isBefore(tournament.getStartDate())
+        || matchDate.isAfter(tournament.getEndDate())) {
+      throw new BusinessException(
+          BusinessErrorCodes.MATCH_DATE_OUTSIDE_TOURNAMENT,
+          "Match date must be within the tournament period");
     }
   }
 

@@ -188,6 +188,8 @@ public class GlobalExceptionHandler {
           BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
           BusinessErrorCodes.MATCH_NOT_EDITABLE,
           BusinessErrorCodes.INVALID_MATCH_WINNER_SCORE,
+          BusinessErrorCodes.INVALID_MATCH_GAME,
+          BusinessErrorCodes.MATCH_DATE_OUTSIDE_TOURNAMENT,
           BusinessErrorCodes.MATCH_WINNER_REQUIRED ->
           HttpStatus.BAD_REQUEST;
 
