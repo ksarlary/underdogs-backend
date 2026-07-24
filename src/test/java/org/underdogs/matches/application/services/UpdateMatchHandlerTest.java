@@ -288,6 +288,38 @@ class UpdateMatchHandlerTest {
   }
 
   @Test
+  void shouldThrowWhenFinishedMatchChangesProgrammingFields() {
+    Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
+    Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
+    Tournament tournament = createTournament();
+
+    Match match =
+        Match.create(
+            new MatchId("match-1"),
+            team1,
+            team2,
+            tournament,
+            Game.LEAGUE_OF_LEGENDS,
+            LocalDateTime.of(2026, 10, 10, 18, 0));
+
+    match.update(null, null, null, null, null, MatchStatus.FINISHED, 2, 1, team1);
+
+    UpdateMatchRequest request =
+        new UpdateMatchRequest(null, null, null, Game.VALORANT, null, null, null, null, null);
+
+    when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
+
+    BusinessException exception =
+        assertThrows(
+            BusinessException.class, () -> handler.handle(new MatchId("match-1"), request));
+
+    assertEquals(BusinessErrorCodes.MATCH_NOT_EDITABLE, exception.getCode());
+
+    verify(matchRepository, never()).save(any());
+    verify(resolveMatchBets, never()).handle(any());
+  }
+
+  @Test
   void shouldResolveBetsWhenMatchBecomesFinished() {
     Team team1 = Team.create(new TeamId("team-1"), "T1", "T1", Game.LEAGUE_OF_LEGENDS);
     Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
