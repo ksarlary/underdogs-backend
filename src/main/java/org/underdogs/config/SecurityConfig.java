@@ -23,25 +23,21 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  private final BlockedUserFilter blockedUserFilter;
-
-  public SecurityConfig(BlockedUserFilter blockedUserFilter) {
-    this.blockedUserFilter = blockedUserFilter;
+  @Bean
+  public ObjectMapper objectMapper() {
+    return new ObjectMapper();
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http, BlockedUserFilter blockedUserFilter) throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(
             auth ->
-                auth
-                    // OpenAPI & health public routes
-                    .requestMatchers(
+                auth.requestMatchers(
                         "/actuator/health", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
                     .permitAll()
-
-                    // Public read-only routes
                     .requestMatchers(HttpMethod.GET, "/api/v1/teams/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/players/**")
@@ -52,7 +48,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v2/matches/**")
                     .permitAll()
-                    // Protected routes
+                    .requestMatchers(HttpMethod.POST, "/api/test/bets/**")
+                    .permitAll()
                     .requestMatchers("/api/v1/teams", "/api/v1/teams/*")
                     .authenticated()
                     .requestMatchers("/api/v1/players", "/api/v1/players/*")

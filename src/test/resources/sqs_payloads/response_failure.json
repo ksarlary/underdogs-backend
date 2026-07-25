@@ -1,0 +1,7 @@
+{
+  "correlation_id": "123e4567-e89b-12d3-a456-426614174000",
+  "event_id": "evt_98765",
+  "status": "FAILURE",
+  "results": [],
+  "error_message": "Invalid format: missing odds field in bet_003"
+}
