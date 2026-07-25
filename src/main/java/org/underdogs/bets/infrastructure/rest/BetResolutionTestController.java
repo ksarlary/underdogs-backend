@@ -26,6 +26,5 @@ public class BetResolutionTestController {
     return ResponseEntity.accepted().body("Requête envoyée à SQS avec succès !");
   }
 
-  public record TestResolutionRequest(
-      String eventId, String winningTeamId, List<BetDto> bets) {}
+  public record TestResolutionRequest(String eventId, String winningTeamId, List<BetDto> bets) {}
 }
