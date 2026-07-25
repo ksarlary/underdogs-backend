@@ -71,8 +71,7 @@ public class TournamentController {
       @RequestParam(required = false) Game game,
       @RequestParam(defaultValue = "0") @Min(0) int page,
       @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
-    Page<Tournament> tournaments =
-        searchTournaments.handle(game, PageRequest.of(page, size));
+    Page<Tournament> tournaments = searchTournaments.handle(game, PageRequest.of(page, size));
 
     return ResponseEntity.ok(PageResponse.from(tournaments.map(tournamentMapper::toSummaryDTO)));
   }
