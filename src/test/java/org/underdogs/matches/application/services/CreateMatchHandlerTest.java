@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,7 +66,7 @@ class CreateMatchHandlerTest {
             "team-2",
             "tournament-1",
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     when(teamRepository.findById(new TeamId("team-1"))).thenReturn(Optional.of(team1));
     when(teamRepository.findById(new TeamId("team-2"))).thenReturn(Optional.of(team2));
@@ -91,7 +91,7 @@ class CreateMatchHandlerTest {
             "team-2",
             "tournament-1",
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     when(teamRepository.findById(new TeamId("team-1"))).thenReturn(Optional.of(team1));
     when(teamRepository.findById(new TeamId("team-2"))).thenReturn(Optional.of(team2));
@@ -122,7 +122,7 @@ class CreateMatchHandlerTest {
             "team-1",
             "tournament-1",
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     when(domainIdGenerator.generate()).thenReturn("match-id-123");
     when(teamRepository.findById(any(TeamId.class))).thenReturn(Optional.of(team1));
@@ -154,7 +154,7 @@ class CreateMatchHandlerTest {
             "team-2",
             "tournament-1",
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     when(teamRepository.findById(new TeamId("team-1"))).thenReturn(Optional.of(team1));
     when(teamRepository.findById(new TeamId("team-2"))).thenReturn(Optional.of(team2));
@@ -187,7 +187,7 @@ class CreateMatchHandlerTest {
             "team-2",
             "tournament-1",
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 12, 1, 18, 0));
+            Instant.parse("2026-12-01T18:00:00Z"));
 
     when(teamRepository.findById(new TeamId("team-1"))).thenReturn(Optional.of(team1));
     when(teamRepository.findById(new TeamId("team-2"))).thenReturn(Optional.of(team2));

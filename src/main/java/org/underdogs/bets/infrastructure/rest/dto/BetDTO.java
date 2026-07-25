@@ -10,6 +10,7 @@ public record BetDTO(
     String team2Name,
     String selectedTeamId,
     String selectedTeamName,
+    String username,
     long amount,
     double coefficient,
     long potentialGain,

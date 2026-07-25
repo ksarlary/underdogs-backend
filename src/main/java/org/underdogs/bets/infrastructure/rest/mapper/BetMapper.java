@@ -1,6 +1,5 @@
 package org.underdogs.bets.infrastructure.rest.mapper;
 
-import java.util.List;
 import org.springframework.stereotype.Component;
 import org.underdogs.bets.domain.Bet;
 import org.underdogs.bets.infrastructure.rest.dto.BetDTO;
@@ -16,15 +15,12 @@ public class BetMapper {
         bet.getMatch().getTeam2().getName(),
         bet.getSelectedTeam().getId().value(),
         bet.getSelectedTeam().getName(),
+        bet.getUser().getUsername(),
         bet.getAmount(),
         bet.getCoefficient(),
         bet.getPotentialGain(),
         bet.getStatus(),
         bet.getCreatedAt(),
         bet.getResolvedAt());
-  }
-
-  public List<BetDTO> toDTOList(List<Bet> bets) {
-    return bets.stream().map(this::toDTO).toList();
   }
 }

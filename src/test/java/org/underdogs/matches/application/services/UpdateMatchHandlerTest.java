@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -82,7 +81,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
     match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     UpdateMatchRequest request =
@@ -113,7 +112,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     UpdateMatchRequest request =
         new UpdateMatchRequest(
@@ -169,7 +168,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
     match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     UpdateMatchRequest request =
@@ -198,7 +197,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
     match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     UpdateMatchRequest request =
@@ -230,7 +229,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
     match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     UpdateMatchRequest request =
@@ -270,7 +269,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     UpdateMatchRequest request =
         new UpdateMatchRequest(null, null, null, null, null, MatchStatus.LIVE, null, null, null);
@@ -299,7 +298,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
@@ -332,7 +331,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
     match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     match.update(null, null, null, null, null, MatchStatus.FINISHED, 2, 1, team1);
@@ -365,7 +364,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     match.update(null, null, null, null, null, MatchStatus.CANCELLED, null, null, null);
 
@@ -398,7 +397,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
     match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     match.update(null, null, null, null, null, MatchStatus.FINISHED, 2, 1, team1);
@@ -431,7 +430,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
     match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
     UpdateMatchRequest request =
@@ -459,7 +458,7 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     UpdateMatchRequest request =
         new UpdateMatchRequest(
@@ -486,11 +485,11 @@ class UpdateMatchHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     UpdateMatchRequest request =
         new UpdateMatchRequest(
-            null, null, null, null, LocalDateTime.of(2026, 10, 15, 18, 0), null, null, null, null);
+            null, null, null, null, Instant.parse("2026-10-15T18:00:00Z"), null, null, null, null);
 
     when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
 

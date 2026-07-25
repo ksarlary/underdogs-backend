@@ -1,8 +1,10 @@
 package org.underdogs.tournaments.application.usecases;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.underdogs.teams.domain.Game;
 import org.underdogs.tournaments.domain.Tournament;
 
 public interface SearchTournaments {
-  List<Tournament> handle();
+  Page<Tournament> handle(Game game, Pageable pageable);
 }

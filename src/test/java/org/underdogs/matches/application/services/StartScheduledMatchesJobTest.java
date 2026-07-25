@@ -5,8 +5,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,10 +34,9 @@ class StartScheduledMatchesJobTest {
   @Test
   void shouldStartScheduledMatchesWhenScheduledTimeHasPassed() {
     Instant nowInstant = Instant.parse("2026-03-21T10:00:00Z");
-    LocalDateTime nowDateTime = LocalDateTime.ofInstant(nowInstant, ZoneOffset.UTC);
 
     when(timeProvider.now()).thenReturn(nowInstant);
-    when(matchRepository.findScheduledMatchesToStart(nowDateTime)).thenReturn(List.of(match));
+    when(matchRepository.findScheduledMatchesToStart(nowInstant)).thenReturn(List.of(match));
 
     job.startScheduledMatches();
 
@@ -50,10 +47,9 @@ class StartScheduledMatchesJobTest {
   @Test
   void shouldDoNothingWhenThereAreNoScheduledMatchesToStart() {
     Instant nowInstant = Instant.parse("2026-03-21T10:00:00Z");
-    LocalDateTime nowDateTime = LocalDateTime.ofInstant(nowInstant, ZoneOffset.UTC);
 
     when(timeProvider.now()).thenReturn(nowInstant);
-    when(matchRepository.findScheduledMatchesToStart(nowDateTime)).thenReturn(List.of());
+    when(matchRepository.findScheduledMatchesToStart(nowInstant)).thenReturn(List.of());
 
     job.startScheduledMatches();
 

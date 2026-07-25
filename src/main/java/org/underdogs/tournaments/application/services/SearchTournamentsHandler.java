@@ -1,7 +1,9 @@
 package org.underdogs.tournaments.application.services;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.underdogs.teams.domain.Game;
 import org.underdogs.tournaments.application.gateways.TournamentRepository;
 import org.underdogs.tournaments.application.usecases.SearchTournaments;
 import org.underdogs.tournaments.domain.Tournament;
@@ -16,7 +18,7 @@ class SearchTournamentsHandler implements SearchTournaments {
   }
 
   @Override
-  public List<Tournament> handle() {
-    return tournamentRepository.findAll();
+  public Page<Tournament> handle(Game game, Pageable pageable) {
+    return tournamentRepository.search(game, pageable);
   }
 }

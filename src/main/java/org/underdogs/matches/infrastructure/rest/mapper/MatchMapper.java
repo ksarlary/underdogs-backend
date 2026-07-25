@@ -1,6 +1,5 @@
 package org.underdogs.matches.infrastructure.rest.mapper;
 
-import java.util.List;
 import org.springframework.stereotype.Component;
 import org.underdogs.matches.domain.Match;
 import org.underdogs.matches.infrastructure.rest.dto.MatchDetailDTO;
@@ -44,9 +43,5 @@ public class MatchMapper {
         match.getWinner() != null ? match.getWinner().getName() : null,
         match.isOpenForBets(timeProvider.now()),
         match.getBettingClosesAt());
-  }
-
-  public List<MatchSummaryDTO> toSummaryDTOList(List<Match> matches) {
-    return matches.stream().map(this::toSummaryDTO).toList();
   }
 }

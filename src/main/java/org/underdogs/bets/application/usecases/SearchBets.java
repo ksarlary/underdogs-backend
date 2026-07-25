@@ -1,8 +1,10 @@
 package org.underdogs.bets.application.usecases;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.underdogs.bets.domain.Bet;
+import org.underdogs.bets.domain.BetStatus;
 
 public interface SearchBets {
-  List<Bet> handle();
+  Page<Bet> handle(BetStatus status, Pageable pageable);
 }

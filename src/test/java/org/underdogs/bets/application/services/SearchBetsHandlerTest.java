@@ -11,6 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.underdogs.bets.application.gateways.BetRepository;
 import org.underdogs.bets.domain.Bet;
 
@@ -30,14 +33,16 @@ class SearchBetsHandlerTest {
   void shouldReturnAllBets() {
     Bet bet1 = mock(Bet.class);
     Bet bet2 = mock(Bet.class);
+    PageRequest pageable = PageRequest.of(0, 10);
+    Page<Bet> page = new PageImpl<>(List.of(bet1, bet2), pageable, 2);
 
-    when(betRepository.findAll()).thenReturn(List.of(bet1, bet2));
+    when(betRepository.search(null, pageable)).thenReturn(page);
 
-    List<Bet> result = handler.handle();
+    Page<Bet> result = handler.handle(null, pageable);
 
-    assertEquals(2, result.size());
-    assertEquals(List.of(bet1, bet2), result);
+    assertEquals(2, result.getContent().size());
+    assertEquals(List.of(bet1, bet2), result.getContent());
 
-    verify(betRepository).findAll();
+    verify(betRepository).search(null, pageable);
   }
 }
