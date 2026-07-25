@@ -50,6 +50,7 @@ class ResolveMatchBetsHandlerTest {
     Team team2 = Team.create(new TeamId("team-2"), "Gen.G", "GEN", Game.LEAGUE_OF_LEGENDS);
 
     Match match = createMatch(team1, team2);
+    match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
     match.update(null, null, null, null, null, MatchStatus.FINISHED, 2, 1, team1);
 
     Bet winningBet =

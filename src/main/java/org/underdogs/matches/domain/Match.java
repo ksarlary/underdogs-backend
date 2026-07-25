@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import org.underdogs.shared.error.BusinessErrorCodes;
@@ -102,6 +103,8 @@ public class Match {
       Game game,
       LocalDateTime scheduledAt) {
     validateTeams(team1, team2);
+    validateGameConsistency(team1, team2, tournament, game);
+    validateScheduledAtWithinTournament(tournament, scheduledAt);
 
     return new Match(
         id,
@@ -127,10 +130,20 @@ public class Match {
       Integer team1Score,
       Integer team2Score,
       Team winner) {
+    validateEditableFields(team1, team2, tournament, game, scheduledAt);
+
     Team newTeam1 = team1 != null ? team1 : this.team1;
     Team newTeam2 = team2 != null ? team2 : this.team2;
+    Tournament newTournament = tournament != null ? tournament : this.tournament;
+    Game newGame = game != null ? game : this.game;
+    LocalDateTime newScheduledAt = scheduledAt != null ? scheduledAt : this.scheduledAt;
 
     validateTeams(newTeam1, newTeam2);
+    validateGameConsistency(newTeam1, newTeam2, newTournament, newGame);
+    validateScheduledAtWithinTournament(newTournament, newScheduledAt);
+    if (status != null) {
+      validateStatusTransition(this.status, status);
+    }
 
     this.team1 = newTeam1;
     this.team2 = newTeam2;
@@ -145,7 +158,6 @@ public class Match {
       this.scheduledAt = scheduledAt;
     }
     if (status != null) {
-      validateStatusTransition(this.status, status);
       this.status = status;
     }
 
@@ -165,6 +177,43 @@ public class Match {
     if (team1.getId().equals(team2.getId())) {
       throw new BusinessException(
           BusinessErrorCodes.INVALID_MATCH_TEAMS, "A team cannot play against itself");
+    }
+  }
+
+  private static void validateGameConsistency(
+      Team team1, Team team2, Tournament tournament, Game game) {
+    if (team1.getGame() != game || team2.getGame() != game || tournament.getGame() != game) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_GAME,
+          "Teams and tournament must belong to the match's game");
+    }
+  }
+
+  private static void validateScheduledAtWithinTournament(
+      Tournament tournament, LocalDateTime scheduledAt) {
+    LocalDate matchDate = scheduledAt.toLocalDate();
+
+    if (matchDate.isBefore(tournament.getStartDate())
+        || matchDate.isAfter(tournament.getEndDate())) {
+      throw new BusinessException(
+          BusinessErrorCodes.MATCH_DATE_OUTSIDE_TOURNAMENT,
+          "Match date must be within the tournament period");
+    }
+  }
+
+  private void validateEditableFields(
+      Team team1, Team team2, Tournament tournament, Game game, LocalDateTime scheduledAt) {
+    if (status == MatchStatus.SCHEDULED) {
+      return;
+    }
+
+    if (team1 != null
+        || team2 != null
+        || tournament != null
+        || game != null
+        || scheduledAt != null) {
+      throw new BusinessException(
+          BusinessErrorCodes.MATCH_NOT_EDITABLE, "Only scheduled matches can be reprogrammed");
     }
   }
 
@@ -193,6 +242,19 @@ public class Match {
       throw new BusinessException(
           BusinessErrorCodes.MATCH_WINNER_REQUIRED, "A finished match must have a winner");
     }
+
+    if (team1Score.equals(team2Score)) {
+      throw new BusinessException(
+          BusinessErrorCodes.MATCH_DRAW_NOT_ALLOWED, "A finished match cannot end in a draw");
+    }
+
+    Team expectedWinner = team1Score > team2Score ? team1 : team2;
+
+    if (!winner.getId().equals(expectedWinner.getId())) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_WINNER_SCORE,
+          "Winner must be the team with the highest score");
+    }
   }
 
   private void validateStatusTransition(MatchStatus currentStatus, MatchStatus newStatus) {
@@ -210,6 +272,12 @@ public class Match {
       throw new BusinessException(
           BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
           "A live match cannot go back to scheduled");
+    }
+
+    if (currentStatus == MatchStatus.SCHEDULED && newStatus == MatchStatus.FINISHED) {
+      throw new BusinessException(
+          BusinessErrorCodes.INVALID_MATCH_STATUS_TRANSITION,
+          "A match must be live before it can be finished");
     }
   }
 
@@ -243,13 +311,21 @@ public class Match {
       return true;
     }
 
-    if (status != MatchStatus.LIVE || liveStartedAt == null) {
+    Instant bettingClosesAt = getBettingClosesAt();
+
+    if (bettingClosesAt == null) {
       return false;
     }
 
-    Instant bettingDeadline = liveStartedAt.plus(5, ChronoUnit.MINUTES);
+    return !now.isAfter(bettingClosesAt);
+  }
 
-    return !now.isAfter(bettingDeadline);
+  public Instant getBettingClosesAt() {
+    if (status != MatchStatus.LIVE || liveStartedAt == null) {
+      return null;
+    }
+
+    return liveStartedAt.plus(5, ChronoUnit.MINUTES);
   }
 
   public Instant getLiveStartedAt() {

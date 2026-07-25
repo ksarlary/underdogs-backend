@@ -1,5 +1,6 @@
 package org.underdogs.matches.application.gateways;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.underdogs.matches.domain.Match;
@@ -13,4 +14,6 @@ public interface MatchRepository {
   Optional<Match> findById(MatchId id);
 
   List<Match> findAll();
+
+  List<Match> findScheduledMatchesToStart(LocalDateTime now);
 }
