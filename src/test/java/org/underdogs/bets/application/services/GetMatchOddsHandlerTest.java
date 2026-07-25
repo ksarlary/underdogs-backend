@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +55,7 @@ class GetMatchOddsHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     when(matchRepository.findById(new MatchId("match-1"))).thenReturn(Optional.of(match));
     when(betRepository.sumAmountByMatch(match)).thenReturn(1000L);

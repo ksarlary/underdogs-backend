@@ -13,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.underdogs.shared.TimeProvider;
 
 @RestControllerAdvice
@@ -93,6 +94,25 @@ public class GlobalExceptionHandler {
 
     ErrorResponse response =
         new ErrorResponse("BAD_REQUEST", exception.getMessage(), timeProvider.now(), List.of());
+
+    return ResponseEntity.badRequest().body(response);
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ErrorResponse> handleTypeMismatchException(
+      MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
+    logger.warn(
+        "Invalid parameter on {} {} - {}",
+        request.getMethod(),
+        request.getRequestURI(),
+        exception.getMessage());
+
+    ErrorResponse response =
+        new ErrorResponse(
+            "INVALID_PARAMETER",
+            "Invalid value for parameter '" + exception.getName() + "'",
+            timeProvider.now(),
+            List.of());
 
     return ResponseEntity.badRequest().body(response);
   }

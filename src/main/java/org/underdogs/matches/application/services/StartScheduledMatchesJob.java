@@ -1,8 +1,6 @@
 package org.underdogs.matches.application.services;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -26,9 +24,8 @@ class StartScheduledMatchesJob {
   @Transactional
   public void startScheduledMatches() {
     Instant nowInstant = timeProvider.now();
-    LocalDateTime nowDateTime = LocalDateTime.ofInstant(nowInstant, ZoneOffset.UTC);
 
-    List<Match> matches = matchRepository.findScheduledMatchesToStart(nowDateTime);
+    List<Match> matches = matchRepository.findScheduledMatchesToStart(nowInstant);
 
     for (Match match : matches) {
       match.startLive(nowInstant);

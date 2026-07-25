@@ -1,6 +1,5 @@
 package org.underdogs.tournaments.infrastructure.rest.mapper;
 
-import java.util.List;
 import org.springframework.stereotype.Component;
 import org.underdogs.matches.infrastructure.rest.dto.MatchInTournamentDTO;
 import org.underdogs.tournaments.domain.Tournament;
@@ -12,7 +11,11 @@ public class TournamentMapper {
 
   public TournamentSummaryDTO toSummaryDTO(Tournament tournament) {
     return new TournamentSummaryDTO(
-        tournament.getId().value(), tournament.getName(), tournament.getGame().name());
+        tournament.getId().value(),
+        tournament.getName(),
+        tournament.getGame().name(),
+        tournament.getStartDate(),
+        tournament.getEndDate());
   }
 
   public TournamentDetailDTO toDetailDTO(Tournament tournament) {
@@ -33,9 +36,5 @@ public class TournamentMapper {
                         match.getScheduledAt(),
                         match.getStatus()))
             .toList());
-  }
-
-  public List<TournamentSummaryDTO> toSummaryDTOList(List<Tournament> tournaments) {
-    return tournaments.stream().map(this::toSummaryDTO).toList();
   }
 }

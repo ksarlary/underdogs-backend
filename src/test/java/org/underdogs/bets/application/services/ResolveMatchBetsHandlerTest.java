@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -133,6 +132,6 @@ class ResolveMatchBetsHandlerTest {
         team2,
         tournament,
         Game.LEAGUE_OF_LEGENDS,
-        LocalDateTime.of(2026, 10, 10, 18, 0));
+        Instant.parse("2026-10-10T18:00:00Z"));
   }
 }

@@ -1,5 +1,6 @@
 package org.underdogs.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
@@ -64,6 +65,11 @@ public class SecurityConfig {
         .addFilterAfter(blockedUserFilter, BearerTokenAuthenticationFilter.class);
 
     return http.build();
+  }
+
+  @Bean
+  public static ObjectMapper objectMapper() {
+    return new ObjectMapper();
   }
 
   @Bean

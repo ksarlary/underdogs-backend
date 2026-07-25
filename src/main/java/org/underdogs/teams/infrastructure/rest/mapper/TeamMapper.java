@@ -32,8 +32,4 @@ public class TeamMapper {
                     player.getId().value(), player.getNickname(), player.getCountryCode()))
         .toList();
   }
-
-  public List<TeamSummaryDTO> toSummaryDTOList(List<Team> teams) {
-    return teams.stream().map(this::toSummaryDTO).toList();
-  }
 }

@@ -1,7 +1,6 @@
 package org.underdogs.matches.infrastructure.rest.dto;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import org.underdogs.matches.domain.MatchStatus;
 
 public record MatchDetailDTO(
@@ -15,7 +14,7 @@ public record MatchDetailDTO(
     String tournamentId,
     String tournamentName,
     String game,
-    LocalDateTime scheduledAt,
+    Instant scheduledAt,
     MatchStatus status,
     String winnerTeamId,
     String winnerTeamName,

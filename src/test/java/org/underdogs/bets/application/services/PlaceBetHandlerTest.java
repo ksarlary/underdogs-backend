@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -95,7 +94,7 @@ class PlaceBetHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     PlaceBetRequest request = new PlaceBetRequest("match-1", "team-1", 100);
 
@@ -171,7 +170,7 @@ class PlaceBetHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     match.update(null, null, null, null, null, MatchStatus.LIVE, null, null, null);
 
@@ -206,7 +205,7 @@ class PlaceBetHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     PlaceBetRequest request = new PlaceBetRequest("match-1", "team-3", 100);
 
@@ -238,7 +237,7 @@ class PlaceBetHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     PlaceBetRequest request = new PlaceBetRequest("match-1", "team-1", 100);
 
@@ -271,7 +270,7 @@ class PlaceBetHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     PlaceBetRequest request = new PlaceBetRequest("match-1", "team-1", 100);
 
@@ -313,7 +312,7 @@ class PlaceBetHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 
@@ -363,7 +362,7 @@ class PlaceBetHandlerTest {
             team2,
             tournament,
             Game.LEAGUE_OF_LEGENDS,
-            LocalDateTime.of(2026, 10, 10, 18, 0));
+            Instant.parse("2026-10-10T18:00:00Z"));
 
     match.startLive(Instant.parse("2026-03-21T10:00:00Z"));
 

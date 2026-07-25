@@ -1,10 +1,12 @@
 package org.underdogs.bets.application.services;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.underdogs.bets.application.gateways.BetRepository;
 import org.underdogs.bets.application.usecases.SearchBets;
 import org.underdogs.bets.domain.Bet;
+import org.underdogs.bets.domain.BetStatus;
 
 @Service
 class SearchBetsHandler implements SearchBets {
@@ -16,7 +18,7 @@ class SearchBetsHandler implements SearchBets {
   }
 
   @Override
-  public List<Bet> handle() {
-    return betRepository.findAll();
+  public Page<Bet> handle(BetStatus status, Pageable pageable) {
+    return betRepository.search(status, pageable);
   }
 }

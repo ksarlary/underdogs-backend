@@ -16,7 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import org.underdogs.shared.error.BusinessErrorCodes;
 import org.underdogs.shared.error.BusinessException;
@@ -52,7 +52,7 @@ public class Match {
   private Game game;
 
   @Column(nullable = false)
-  private LocalDateTime scheduledAt;
+  private Instant scheduledAt;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
@@ -76,7 +76,7 @@ public class Match {
       Team team2,
       Tournament tournament,
       Game game,
-      LocalDateTime scheduledAt,
+      Instant scheduledAt,
       MatchStatus status,
       Integer team1Score,
       Integer team2Score,
@@ -96,12 +96,7 @@ public class Match {
   }
 
   public static Match create(
-      MatchId id,
-      Team team1,
-      Team team2,
-      Tournament tournament,
-      Game game,
-      LocalDateTime scheduledAt) {
+      MatchId id, Team team1, Team team2, Tournament tournament, Game game, Instant scheduledAt) {
     validateTeams(team1, team2);
     validateGameConsistency(team1, team2, tournament, game);
     validateScheduledAtWithinTournament(tournament, scheduledAt);
@@ -125,7 +120,7 @@ public class Match {
       Team team2,
       Tournament tournament,
       Game game,
-      LocalDateTime scheduledAt,
+      Instant scheduledAt,
       MatchStatus status,
       Integer team1Score,
       Integer team2Score,
@@ -136,7 +131,7 @@ public class Match {
     Team newTeam2 = team2 != null ? team2 : this.team2;
     Tournament newTournament = tournament != null ? tournament : this.tournament;
     Game newGame = game != null ? game : this.game;
-    LocalDateTime newScheduledAt = scheduledAt != null ? scheduledAt : this.scheduledAt;
+    Instant newScheduledAt = scheduledAt != null ? scheduledAt : this.scheduledAt;
 
     validateTeams(newTeam1, newTeam2);
     validateGameConsistency(newTeam1, newTeam2, newTournament, newGame);
@@ -190,8 +185,8 @@ public class Match {
   }
 
   private static void validateScheduledAtWithinTournament(
-      Tournament tournament, LocalDateTime scheduledAt) {
-    LocalDate matchDate = scheduledAt.toLocalDate();
+      Tournament tournament, Instant scheduledAt) {
+    LocalDate matchDate = LocalDate.ofInstant(scheduledAt, ZoneOffset.UTC);
 
     if (matchDate.isBefore(tournament.getStartDate())
         || matchDate.isAfter(tournament.getEndDate())) {
@@ -202,7 +197,7 @@ public class Match {
   }
 
   private void validateEditableFields(
-      Team team1, Team team2, Tournament tournament, Game game, LocalDateTime scheduledAt) {
+      Team team1, Team team2, Tournament tournament, Game game, Instant scheduledAt) {
     if (status == MatchStatus.SCHEDULED) {
       return;
     }
@@ -356,7 +351,7 @@ public class Match {
     return game;
   }
 
-  public LocalDateTime getScheduledAt() {
+  public Instant getScheduledAt() {
     return scheduledAt;
   }
 
