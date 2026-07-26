@@ -23,7 +23,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-
   @Bean
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http, BlockedUserFilter blockedUserFilter) throws Exception {
