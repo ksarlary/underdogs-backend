@@ -25,21 +25,21 @@ import org.underdogs.users.application.gateways.UserRepository;
 public class BlockedUserFilter extends OncePerRequestFilter {
 
   private static final List<String> ALLOWED_PREFIXES =
-          List.of(
-                  "/api/v1/users/me",
-                  "/api/v1/matches",
-                  "/api/v2/matches",
-                  "/api/v1/teams",
-                  "/api/v1/players",
-                  "/api/v1/tournaments",
-                  "/v3/api-docs",
-                  "/swagger-ui");
+      List.of(
+          "/api/v1/users/me",
+          "/api/v1/matches",
+          "/api/v2/matches",
+          "/api/v1/teams",
+          "/api/v1/players",
+          "/api/v1/tournaments",
+          "/v3/api-docs",
+          "/swagger-ui");
 
   private final UserRepository userRepository;
   private final ObjectMapper objectMapper;
 
   public BlockedUserFilter(
-          @Lazy UserRepository userRepository, @Qualifier("objectMapper") ObjectMapper objectMapper) {
+      @Lazy UserRepository userRepository, @Qualifier("objectMapper") ObjectMapper objectMapper) {
     this.userRepository = userRepository;
     this.objectMapper = objectMapper;
   }
@@ -57,8 +57,8 @@ public class BlockedUserFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(
-          HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-          throws ServletException, IOException {
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -82,18 +82,18 @@ public class BlockedUserFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterNestedErrorDispatch(
-          HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-          throws ServletException, IOException {
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
     filterChain.doFilter(request, response);
   }
 
   private void writeBlockedResponse(HttpServletResponse response, String reason)
-          throws IOException {
+      throws IOException {
     response.setStatus(HttpStatus.FORBIDDEN.value());
     response.setContentType("application/json");
 
     ErrorResponse errorResponse =
-            new ErrorResponse(BusinessErrorCodes.USER_BLOCKED, reason, Instant.now(), List.of());
+        new ErrorResponse(BusinessErrorCodes.USER_BLOCKED, reason, Instant.now(), List.of());
 
     response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
   }
