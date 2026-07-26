@@ -24,11 +24,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
   @Bean
-  public ObjectMapper objectMapper() {
-    return new ObjectMapper();
-  }
-
-  @Bean
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http, BlockedUserFilter blockedUserFilter) throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
