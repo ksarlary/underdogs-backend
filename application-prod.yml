@@ -1,0 +1,4 @@
+spring:
+  security:
+    cors:
+      allowed-origins: "https://ton-domaine-frontend.com"
