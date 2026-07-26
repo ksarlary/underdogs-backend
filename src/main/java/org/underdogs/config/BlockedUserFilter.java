@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -38,7 +37,8 @@ public class BlockedUserFilter extends OncePerRequestFilter {
   private final UserRepository userRepository;
   private final ObjectMapper objectMapper;
 
-  public BlockedUserFilter(UserRepository userRepository, @Qualifier("objectMapper") ObjectMapper objectMapper) {
+  public BlockedUserFilter(
+      UserRepository userRepository, @Qualifier("objectMapper") ObjectMapper objectMapper) {
     this.userRepository = userRepository;
     this.objectMapper = objectMapper;
   }
@@ -59,9 +59,7 @@ public class BlockedUserFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
-    Authentication authentication =
-        SecurityContextHolder.getContext()
-            .getAuthentication();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     if (!(authentication instanceof JwtAuthenticationToken jwtAuthenticationToken)) {
       filterChain.doFilter(request, response);
