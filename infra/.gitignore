@@ -1,0 +1,13 @@
+# Valeurs réelles : contiennent l'identifiant d'abonnement et les chemins locaux.
+*.tfvars
+!*.tfvars.example
+
+# L'état Terraform contient les valeurs de toutes les ressources, secrets compris.
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+
+# Mots de passe des bases et du compte admin Keycloak.
+.env
