@@ -1,0 +1,143 @@
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - frontend
+      - backend
+      - keycloak
+
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    restart: always
+    expose:
+      - "80"
+
+  backend:
+    image: ${BACKEND_IMAGE}
+    restart: always
+    expose:
+      - "8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      JAVA_TOOL_OPTIONS: -Xmx512m
+
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_ISSUER_URI: https://${SITE_ADDRESS}/auth/realms/underdogs
+      JWT_JWK_SET_URI: http://keycloak:8080/auth/realms/underdogs/protocol/openid-connect/certs
+      CORS_ALLOWED_ORIGINS: https://${SITE_ADDRESS}
+
+      SQS_QUEUES_REQUEST_QUEUE_NAME: underdogs-requests-queue
+      SQS_QUEUES_RESPONSE_QUEUE_NAME: underdogs-responses-queue
+      SPRING_CLOUD_AWS_SQS_ENDPOINT: http://sqs:9324
+      SPRING_CLOUD_AWS_REGION_STATIC: eu-west-3
+      SPRING_CLOUD_AWS_CREDENTIALS_ACCESS_KEY: local
+      SPRING_CLOUD_AWS_CREDENTIALS_SECRET_KEY: local
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      sqs:
+        condition: service_started
+
+  worker:
+    image: ${WORKER_IMAGE}
+    restart: always
+    environment:
+      SQS_ENDPOINT: http://sqs:9324
+      SQS_REQUEST_QUEUE_URL: http://sqs:9324/000000000000/underdogs-requests-queue
+      SQS_RESPONSE_QUEUE_URL: http://sqs:9324/000000000000/underdogs-responses-queue
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_REGION: eu-west-3
+    depends_on:
+      - sqs
+
+  sqs:
+    image: softwaremill/elasticmq-native:1.6.11
+    restart: always
+    expose:
+      - "9324"
+    volumes:
+      - ./elasticmq.conf:/opt/elasticmq.conf:ro
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.6
+    restart: always
+    command: start --import-realm
+    expose:
+      - "8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KEYCLOAK_DB_NAME}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USERNAME}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+
+      KC_HOSTNAME: https://${SITE_ADDRESS}/auth
+      KC_HTTP_RELATIVE_PATH: /auth
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HEALTH_ENABLED: "true"
+
+      JAVA_OPTS_APPEND: -Xmx512m
+    volumes:
+      - ../keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16.9
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  keycloak-db:
+    image: postgres:16.9
+    restart: always
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME}
+      POSTGRES_USER: ${KEYCLOAK_DB_USERNAME}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USERNAME} -d ${KEYCLOAK_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+volumes:
+  postgres-data:
+  keycloak-db-data:
+  caddy-data:
+  caddy-config:

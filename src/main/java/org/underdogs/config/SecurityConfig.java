@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
@@ -27,7 +28,7 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http, BlockedUserFilter blockedUserFilter) throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(csrf -> csrf.disable())
+        .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
@@ -42,8 +43,6 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/api/v1/matches/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v2/matches/**")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/test/bets/**")
                     .permitAll()
                     .requestMatchers("/api/v1/teams", "/api/v1/teams/*")
                     .authenticated()

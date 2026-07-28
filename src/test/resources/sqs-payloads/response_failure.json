@@ -1,6 +1,0 @@
-{
-  "correlation_id": "corr-456-failure",
-  "status": "failure",
-  "results": [],
-  "error_message": "Failed to resolve bets: Database connection timeout"
-}

@@ -1,0 +1,14 @@
+subscription_id = "00000000-0000-0000-0000-000000000000"
+environment     = "prod"
+location        = "francecentral"
+
+# Doit être unique dans la région : le FQDN sera
+# <dns_label>-prod.francecentral.cloudapp.azure.com
+dns_label = "underdogs-esport"
+
+vm_size = "Standard_B2s"
+
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+
+# Remplacer par son IP publique pour ne pas exposer SSH au monde entier.
+ssh_source_address = "*"

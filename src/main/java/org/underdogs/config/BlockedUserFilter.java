@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,7 +39,7 @@ public class BlockedUserFilter extends OncePerRequestFilter {
   private final ObjectMapper objectMapper;
 
   public BlockedUserFilter(
-      UserRepository userRepository, @Qualifier("objectMapper") ObjectMapper objectMapper) {
+      @Lazy UserRepository userRepository, @Qualifier("objectMapper") ObjectMapper objectMapper) {
     this.userRepository = userRepository;
     this.objectMapper = objectMapper;
   }
