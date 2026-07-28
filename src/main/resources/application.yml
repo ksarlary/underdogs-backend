@@ -28,6 +28,12 @@ spring:
         static: eu-west-3
       sqs:
         endpoint: http://localhost:4566
+
+sqs:
+  queues:
+    request-queue-name: underdogs-requests-queue
+    response-queue-name: underdogs-responses-queue
+
 logging:
   level:
     org.flywaydb: DEBUG

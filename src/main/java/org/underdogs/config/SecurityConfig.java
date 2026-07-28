@@ -44,8 +44,6 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v2/matches/**")
                     .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/test/bets/**")
-                    .permitAll()
                     .requestMatchers("/api/v1/teams", "/api/v1/teams/*")
                     .authenticated()
                     .requestMatchers("/api/v1/players", "/api/v1/players/*")

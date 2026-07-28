@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.underdogs.bets.dtos.ResolveEventBetsRequest;
 
 @RestController
-@RequestMapping("/bets/resolution")
+@RequestMapping("/api/v1/bets/resolution")
 public class BetResolutionController {
 
   private final BetResolutionPublisherService betResolutionPublisherService;
