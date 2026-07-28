@@ -11,15 +11,15 @@ import org.underdogs.bets.dtos.ResolveEventBetsRequest;
 @RequestMapping("/bets/resolution")
 public class BetResolutionController {
 
-    private final BetResolutionPublisherService betResolutionPublisherService;
+  private final BetResolutionPublisherService betResolutionPublisherService;
 
-    @Autowired
-    public BetResolutionController(BetResolutionPublisherService betResolutionPublisherService) {
-        this.betResolutionPublisherService = betResolutionPublisherService;
-    }
+  @Autowired
+  public BetResolutionController(BetResolutionPublisherService betResolutionPublisherService) {
+    this.betResolutionPublisherService = betResolutionPublisherService;
+  }
 
-    @PostMapping
-    public void resolveBets(@RequestBody ResolveEventBetsRequest request) {
-        betResolutionPublisherService.publishBetResolutionRequest(request);
-    }
+  @PostMapping
+  public void resolveBets(@RequestBody ResolveEventBetsRequest request) {
+    betResolutionPublisherService.publishBetResolutionRequest(request);
+  }
 }

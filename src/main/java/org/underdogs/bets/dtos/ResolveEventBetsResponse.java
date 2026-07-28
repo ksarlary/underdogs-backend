@@ -9,12 +9,10 @@ public record ResolveEventBetsResponse(
     @JsonProperty("event_id") String eventId,
     String status,
     List<BetResult> results,
-    @JsonProperty("error_message") String errorMessage
-) {
-    public record BetResult(
-        @JsonProperty("bet_id") String betId,
-        @JsonProperty("user_id") String userId,
-        String status,
-        @JsonProperty("kibbles_to_credit") int kibblesToCredit
-    ) {}
+    @JsonProperty("error_message") String errorMessage) {
+  public record BetResult(
+      @JsonProperty("bet_id") String betId,
+      @JsonProperty("user_id") String userId,
+      String status,
+      @JsonProperty("kibbles_to_credit") int kibblesToCredit) {}
 }
