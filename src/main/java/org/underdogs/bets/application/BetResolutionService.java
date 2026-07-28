@@ -1,5 +1,7 @@
 package org.underdogs.bets.application;
 
+import java.time.Instant;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,32 +11,36 @@ import org.underdogs.bets.domain.Bet;
 import org.underdogs.bets.domain.BetRepository;
 import org.underdogs.bets.dtos.ResolveEventBetsResponse;
 
-import java.util.UUID;
-
 @Service
 public class BetResolutionService {
 
-    private static final Logger logger = LoggerFactory.getLogger(BetResolutionService.class);
+  private static final Logger logger = LoggerFactory.getLogger(BetResolutionService.class);
 
-    private final BetRepository betRepository;
+  private final BetRepository betRepository;
 
-    @Autowired
-    public BetResolutionService(BetRepository betRepository) {
-        this.betRepository = betRepository;
-    }
+  @Autowired
+  public BetResolutionService(BetRepository betRepository) {
+    this.betRepository = betRepository;
+  }
 
-    @Transactional
-    public void processBetResolution(ResolveEventBetsResponse response) {
-        logger.info("Processing bet resolution for event_id: {}", response.eventId());
+  @Transactional
+  public void processBetResolution(ResolveEventBetsResponse response) {
+    logger.info("Processing bet resolution for event_id: {}", response.eventId());
 
-        for (ResolveEventBetsResponse.BetResult result : response.results()) {
-            Bet bet = betRepository.findById(UUID.fromString(result.betId())).orElse(null);
-            if (bet != null) {
-                bet.setStatus(result.status());
-                betRepository.save(bet);
-            }
+    for (ResolveEventBetsResponse.BetResult result : response.results()) {
+      Bet bet = betRepository.findById(UUID.fromString(result.betId())).orElse(null);
+      if (bet != null) {
+        Instant now = Instant.now();
+        switch (result.status()) {
+          case "WON" -> bet.markWon(now);
+          case "LOST" -> bet.markLost(now);
+          case "CANCELLED" -> bet.cancel(now);
+          default -> logger.warn("Unknown bet status: {}", result.status());
         }
-
-        logger.info("Successfully processed bet resolution for event_id: {}", response.eventId());
+        betRepository.save(bet);
+      }
     }
+
+    logger.info("Successfully processed bet resolution for event_id: {}", response.eventId());
+  }
 }

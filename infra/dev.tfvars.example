@@ -1,0 +1,11 @@
+subscription_id = "00000000-0000-0000-0000-000000000000"
+environment     = "dev"
+location        = "francecentral"
+
+dns_label = "underdogs-esport"
+
+# Moins de RAM : suffisant pour valider l'infra, trop juste pour la stack complète.
+vm_size = "Standard_B1ms"
+
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+ssh_source_address  = "*"

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.underdogs.bets.application.services.BetResolutionService;
-import org.underdogs.bets.infrastructure.sqs.dto.BetResolutionResponse;
+import org.underdogs.bets.application.BetResolutionService;
+import org.underdogs.bets.dtos.ResolveEventBetsResponse;
 
 @Component
 public class BetResolutionSqsListener {
@@ -23,23 +23,23 @@ public class BetResolutionSqsListener {
 
   public void handleBetResolutionMessage(String message) {
     try {
-      logger.debug("Message SQS reçu pour résolution des paris: {}", message);
+      logger.debug("SQS message received for bet resolution: {}", message);
 
-      BetResolutionResponse response = objectMapper.readValue(message, BetResolutionResponse.class);
+      ResolveEventBetsResponse response =
+          objectMapper.readValue(message, ResolveEventBetsResponse.class);
 
       logger.info(
-          "Message SQS désérialisé avec correlation_id: {}, status: {}",
+          "SQS message deserialized with correlation_id: {}, status: {}",
           response.correlationId(),
           response.status());
 
       betResolutionService.processBetResolution(response);
 
       logger.info(
-          "Message SQS traité avec succès pour correlation_id: {}", response.correlationId());
+          "SQS message processed successfully for correlation_id: {}", response.correlationId());
     } catch (Exception e) {
-      logger.error("Erreur lors du traitement du message SQS: {}", message, e);
-      throw new SqsListenerException(
-          "Impossible de traiter le message SQS de résolution des paris", e);
+      logger.error("Error processing SQS message: {}", message, e);
+      throw new SqsListenerException("Unable to process bet resolution SQS message", e);
     }
   }
 

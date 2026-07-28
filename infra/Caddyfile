@@ -1,0 +1,17 @@
+# Une seule origine pour les trois services : le navigateur ne fait jamais
+# d'appel cross-origin, donc aucune règle CORS à gérer.
+{$SITE_ADDRESS} {
+	encode gzip
+
+	handle /api/* {
+		reverse_proxy backend:8080
+	}
+
+	handle /auth/* {
+		reverse_proxy keycloak:8080
+	}
+
+	handle {
+		reverse_proxy frontend:80
+	}
+}
