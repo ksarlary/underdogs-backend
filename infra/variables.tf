@@ -31,9 +31,20 @@ variable "dns_label" {
 }
 
 variable "vm_size" {
-  description = "Taille de la VM. B2s (2 vCPU / 4 Go) est le minimum confortable pour la stack complète."
+  description = "Taille de la VM. 2 vCPU et 4 Go sont le minimum confortable pour la stack complète."
   type        = string
   default     = "Standard_B2s"
+}
+
+variable "availability_zone" {
+  description = <<-EOT
+    Zone de disponibilité, sous forme de chaîne ("1", "2", "3"), ou null pour laisser Azure choisir.
+    Certaines tailles ne sont ouvertes que sur une zone précise selon l'abonnement ; la commande
+    `az vm list-skus --location <region> --resource-type virtualMachines -o table` indique les
+    restrictions.
+  EOT
+  type        = string
+  default     = null
 }
 
 variable "os_disk_size_gb" {
