@@ -48,12 +48,30 @@ services:
       SPRING_CLOUD_AWS_CREDENTIALS_ACCESS_KEY: local
       SPRING_CLOUD_AWS_CREDENTIALS_SECRET_KEY: local
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       keycloak:
         condition: service_started
       sqs:
         condition: service_started
+
+  # Les migrations sont une étape explicite du déploiement, exécutée avant que le
+  # backend ne démarre. Spring Boot 4 ne garantit plus que son initialiseur Flyway
+  # s'exécute avant la validation du schéma par Hibernate.
+  migrate:
+    image: flyway/flyway:11-alpine
+    command: -connectRetries=30 migrate
+    environment:
+      FLYWAY_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      FLYWAY_USER: ${DB_USERNAME}
+      FLYWAY_PASSWORD: ${DB_PASSWORD}
+      FLYWAY_LOCATIONS: filesystem:/flyway/sql
+      FLYWAY_BASELINE_ON_MIGRATE: "true"
+    volumes:
+      - ../src/main/resources/db/migration:/flyway/sql:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   worker:
     image: ${WORKER_IMAGE}
