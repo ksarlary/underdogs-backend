@@ -206,10 +206,29 @@ docker compose -f docker-compose.prod.yml up -d frontend
 
 ## Exploitation
 
-### Mettre à jour une image
+### Mettre à jour la production
+
+Le déploiement est automatisé par le workflow `Deploy` (`.github/workflows/deploy.yml`). Il se
+déclenche à la fin de la CD sur `main`, et peut aussi être lancé à la main depuis l'onglet Actions
+via *Run workflow*.
+
+Le workflow se connecte en SSH, aligne le dépôt de la VM sur `origin/main`, attend que le registre
+serve bien l'image du commit demandé — c'est ce qui évite de déployer l'image précédente quand la CD
+n'a pas fini — relance les conteneurs, puis vérifie que l'API répond 200.
+
+Trois secrets sont requis dans *Settings → Secrets and variables → Actions* :
+
+| Secret | Valeur |
+| --- | --- |
+| `VM_HOST` | le FQDN de la VM |
+| `VM_USER` | `underdogs` |
+| `VM_SSH_KEY` | le contenu de la clé privée SSH, en entier |
+
+En cas de besoin, le déploiement manuel reste possible :
 
 ```bash
-cd /opt/underdogs/infra
+cd /opt/underdogs/underdogs-backend/infra
+git pull
 docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml up -d
 ```

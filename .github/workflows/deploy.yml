@@ -1,0 +1,88 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["CD"]
+    types: [completed]
+    branches: ["main"]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resolve the commit to deploy
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.VM_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy to the VM
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            "${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}" \
+            'bash -s' -- "${{ steps.target.outputs.sha }}" <<'REMOTE'
+          set -euo pipefail
+
+          EXPECTED="$1"
+          COMPOSE="docker compose -f docker-compose.prod.yml"
+          IMAGE="ghcr.io/ksarlary/underdogs-api:latest"
+
+          cd /opt/underdogs/underdogs-backend
+          git fetch --quiet origin main
+          git reset --hard --quiet origin/main
+          cd infra
+
+          # La CD publie l'image en parallèle : on attend que le registre serve
+          # bien le commit demandé plutôt que de déployer l'image précédente.
+          for attempt in $(seq 1 20); do
+            $COMPOSE pull --quiet
+            actual=$(docker image inspect "$IMAGE" \
+              --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')
+            if [ "$actual" = "$EXPECTED" ]; then
+              echo "Image backend alignée sur $EXPECTED"
+              break
+            fi
+            if [ "$attempt" = "20" ]; then
+              echo "Abandon : le registre sert encore $actual au lieu de $EXPECTED" >&2
+              exit 1
+            fi
+            echo "Registre en $actual, attendu $EXPECTED — nouvelle tentative ($attempt/20)"
+            sleep 15
+          done
+
+          $COMPOSE up -d
+          $COMPOSE ps
+          REMOTE
+
+      - name: Smoke test
+        run: |
+          for attempt in $(seq 1 20); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' \
+              "https://${{ secrets.VM_HOST }}/api/v1/teams" || true)
+            if [ "$code" = "200" ]; then
+              echo "API en ligne"
+              exit 0
+            fi
+            echo "API en $code, nouvelle tentative ($attempt/20)"
+            sleep 10
+          done
+          echo "L'API ne répond pas 200 après le déploiement" >&2
+          exit 1
